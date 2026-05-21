@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ingresar — PymeBoost Demo</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box}body{margin:0;min-height:100vh;background:#09090b;color:#fafafa;font-family:'Outfit',sans-serif;display:flex;align-items:center;justify-content:center;padding:24px}
+    .wrap{max-width:720px;width:100%}
+    h1{font-size:1.75rem;font-weight:800;margin:0 0 8px}
+    p{color:rgba(255,255,255,0.45);font-size:14px;line-height:1.6;margin:0 0 28px}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    .card{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:20px;cursor:pointer;transition:all .2s}
+    .card:hover{border-color:rgba(139,92,246,0.4);background:rgba(124,58,237,0.08);transform:translateY(-2px)}
+    .card h3{margin:0 0 6px;font-size:15px}
+    .card span{font-size:12px;color:rgba(255,255,255,0.4)}
+    .tag{display:inline-block;margin-top:10px;font-size:11px;font-weight:600;padding:3px 10px;border-radius:100px;background:rgba(124,58,237,0.15);color:#a78bfa}
+    a.home{display:inline-block;margin-top:24px;color:#a78bfa;font-size:13px;text-decoration:none}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Ingresar al demo</h1>
+    <p>Elige una cuenta de prueba. La sesión se guarda en tu navegador para probar todo el flujo sin contraseña.</p>
+    <div class="grid">
+      <div class="card" onclick="login('pyme',1)">
+        <h3>Retail Fashion MX</h3>
+        <span>PYME · Retail · CDMX · 45 emp.</span>
+        <div class="tag">Dashboard PYME</div>
+      </div>
+      <div class="card" onclick="login('pyme',2)">
+        <h3>Distribuidora Norte</h3>
+        <span>PYME · Manufactura · MTY</span>
+        <div class="tag">Dashboard PYME</div>
+      </div>
+      <div class="card" onclick="login('advisor',1)">
+        <h3>María González</h3>
+        <span>Asesora · Marketing Digital · CDMX</span>
+        <div class="tag">Dashboard Asesor</div>
+      </div>
+      <div class="card" onclick="login('advisor',2)">
+        <h3>Jorge Méndez</h3>
+        <span>Asesor · Eficiencia Operacional · MTY</span>
+        <div class="tag">Dashboard Asesor</div>
+      </div>
+      <div class="card" onclick="login('advisor',3)">
+        <h3>Carlos Ruiz</h3>
+        <span>Asesor · Transformación Digital</span>
+        <div class="tag">Dashboard Asesor</div>
+      </div>
+      <div class="card" onclick="login('advisor',6)">
+        <h3>Roberto Sánchez</h3>
+        <span>Asesor · Logística · León</span>
+        <div class="tag">Dashboard Asesor</div>
+      </div>
+    </div>
+    <a href="PymeBoost Landing.html" class="home">← Volver al inicio</a>
+  </div>
+  <script src="js/api.js"></script>
+  <script>
+    function login(role, id) {
+      if (role === 'pyme') {
+        PymeBoost.Session.asPyme(id);
+        location.href = 'Dashboard PYME.html';
+      } else {
+        PymeBoost.Session.asAdvisor(id);
+        location.href = 'Dashboard Asesor.html';
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registro de Asesor — PymeBoost</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: { extend: { fontFamily: { sans: ['Outfit', 'sans-serif'] } } }
+    }
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body { margin: 0; background: #09090b; color: #fafafa; font-family: 'Outfit', sans-serif; min-height: 100vh; }
+
+    /* Inputs */
+    .field-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.75);
+      margin-bottom: 6px;
+      letter-spacing: 0.01em;
+    }
+    .field-hint {
+      font-size: 11px;
+      color: rgba(255,255,255,0.35);
+      margin-top: 5px;
+    }
+    .inp {
+      width: 100%;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-size: 14px;
+      font-family: 'Outfit', sans-serif;
+      color: white;
+      outline: none;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .inp::placeholder { color: rgba(255,255,255,0.25); }
+    .inp:focus {
+      border-color: rgba(139,92,246,0.6);
+      background: rgba(139,92,246,0.06);
+    }
+    select.inp option { background: #1a1a2e; color: white; }
+    textarea.inp { resize: vertical; min-height: 100px; line-height: 1.6; }
+
+    /* Check icon */
+    .check-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 13px;
+      color: rgba(255,255,255,0.6);
+      line-height: 1.6;
+    }
+    .check-item svg { flex-shrink: 0; margin-top: 2px; }
+    .check-item strong { color: rgba(255,255,255,0.9); font-weight: 600; display: block; font-size: 13px; margin-bottom: 2px; }
+
+    /* Glass */
+    .glass {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+    }
+    .glass-violet {
+      background: rgba(124,58,237,0.07);
+      border: 1px solid rgba(139,92,246,0.2);
+      border-radius: 16px;
+    }
+
+    /* Chip toggle */
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 500;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.04);
+      color: rgba(255,255,255,0.6);
+      cursor: pointer;
+      transition: all 0.15s;
+      user-select: none;
+    }
+    .chip:hover { border-color: rgba(139,92,246,0.4); color: white; }
+    .chip.active {
+      background: rgba(124,58,237,0.2);
+      border-color: rgba(139,92,246,0.5);
+      color: #c4b5fd;
+    }
+
+    /* Progress bar */
+    .progress-track {
+      height: 3px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 10px;
+      overflow: hidden;
+      flex: 1;
+    }
+    .progress-fill {
+      height: 100%;
+      border-radius: 10px;
+      background: linear-gradient(90deg, #7c3aed, #a855f7);
+      transition: width 0.4s ease;
+    }
+
+    /* Step transition */
+    .step-panel { display: none; }
+    .step-panel.active { display: block; animation: fadeSlide 0.35s ease; }
+    @keyframes fadeSlide {
+      from { opacity: 0; transform: translateX(14px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+
+    /* Checkbox custom */
+    .cb-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      cursor: pointer;
+    }
+    .cb-box {
+      width: 18px;
+      height: 18px;
+      border-radius: 6px;
+      border: 1.5px solid rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.04);
+      flex-shrink: 0;
+      margin-top: 1px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+    }
+    .cb-box.checked {
+      background: #7c3aed;
+      border-color: #7c3aed;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-thumb { background: rgba(139,92,246,0.3); border-radius: 10px; }
+
+    /* Range slider */
+    input[type=range] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 4px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 10px;
+      outline: none;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      background: #7c3aed;
+      cursor: pointer;
+      border: 2px solid white;
+      box-shadow: 0 2px 8px rgba(124,58,237,0.4);
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── NAVBAR ── -->
+<nav class="border-b px-5 flex items-center justify-between h-14 flex-shrink-0" style="border-color:rgba(255,255,255,0.06);background:rgba(9,9,11,0.9);backdrop-filter:blur(12px);position:sticky;top:0;z-index:50;">
+  <a href="PymeBoost Landing.html" class="flex items-center gap-2 no-underline">
+    <div class="w-7 h-7 rounded-xl flex items-center justify-center" style="background:linear-gradient(135deg,#7c3aed,#a855f7);">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline>
+      </svg>
+    </div>
+    <span style="font-weight:700;font-size:15px;color:white;">PymeBoost</span>
+  </a>
+  <span style="font-size:13px;color:rgba(255,255,255,0.35);">Proceso de verificación profesional</span>
+</nav>
+
+<!-- ── MAIN ── -->
+<main class="max-w-2xl mx-auto px-5 py-10 pb-20">
+
+  <!-- Header + progress -->
+  <div class="mb-8">
+    <h1 style="font-size:1.5rem;font-weight:800;letter-spacing:-0.025em;margin-bottom:4px;">Registro de Asesor</h1>
+    <p id="step-label" style="font-size:13px;color:rgba(255,255,255,0.4);margin-bottom:16px;">Proceso de verificación profesional — Paso 1 de 4</p>
+
+    <!-- Progress segments -->
+    <div class="flex items-center gap-2">
+      <div class="progress-track"><div class="progress-fill" id="prog-1" style="width:100%;"></div></div>
+      <div class="progress-track"><div class="progress-fill" id="prog-2" style="width:0%;"></div></div>
+      <div class="progress-track"><div class="progress-fill" id="prog-3" style="width:0%;"></div></div>
+      <div class="progress-track"><div class="progress-fill" id="prog-4" style="width:0%;"></div></div>
+    </div>
+  </div>
+
+  <!-- ─────────── STEP 1 ─────────── -->
+  <div class="step-panel active" id="step-1">
+
+    <!-- Fondo de Garantía info -->
+    <div class="glass-violet p-6 mb-7">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style="background:rgba(139,92,246,0.2);border:1px solid rgba(139,92,246,0.3);">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <h2 style="font-size:1rem;font-weight:800;letter-spacing:-0.01em;">Fondo de Garantía: Tu Protección como Asesor</h2>
+      </div>
+
+      <p style="font-size:13px;color:rgba(255,255,255,0.55);line-height:1.7;margin-bottom:16px;">
+        <strong style="color:rgba(255,255,255,0.85);font-weight:600;">¿Qué es?</strong>
+        Se retiene el 10% de cada pago mensual en una cuenta neutral administrada por PymeBoost. Este fondo se libera al completar el proyecto exitosamente o se usa para resolver disputas de manera justa.
+      </p>
+
+      <p style="font-size:13px;font-weight:700;color:rgba(255,255,255,0.8);margin-bottom:12px;">Cómo te protege:</p>
+
+      <div class="grid sm:grid-cols-2 gap-x-8 gap-y-4 mb-5">
+        <div class="check-item">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          <div>
+            <strong>Cancelaciones Arbitrarias</strong>
+            Si la PYME cancela sin causa justificada después de entregar trabajo, el fondo asegura tu pago por entregables verificables completados.
+          </div>
+        </div>
+        <div class="check-item">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          <div>
+            <strong>PYME No Implementa</strong>
+            Si cumpliste tus entregables pero la PYME no ejecuta recomendaciones, NO eres responsable de falta de resultados. El mediador verifica quién incumplió.
+          </div>
+        </div>
+        <div class="check-item">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          <div>
+            <strong>Mediación Sin Costo</strong>
+            Mediador neutral certificado revisa evidencia. Decisión vinculante. Costos cubiertos por el fondo. 95% de disputas se resuelven sin llegar a arbitraje.
+          </div>
+        </div>
+        <div class="check-item">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          <div>
+            <strong>Liberación al Completar</strong>
+            Al finalizar exitosamente, el fondo se libera completo (menos 2% administrativo). Cobras retainer + bonos + fondos retenidos.
+          </div>
+        </div>
+      </div>
+
+      <!-- Importante notice -->
+      <div class="rounded-xl px-4 py-3" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);">
+        <p style="font-size:13px;color:rgba(255,255,255,0.55);line-height:1.7;">
+          <strong style="color:rgba(255,255,255,0.85);font-weight:700;">Importante:</strong>
+          Este no es un modelo freelance. Trabajas en proyectos de 4–8 meses con compensación atada a resultados. El fondo asegura que si entregas según contrato, cobras. Si la PYME no ejecuta, no pierdes tu compensación legítima.
+        </p>
+      </div>
+    </div>
+
+    <!-- Información Personal -->
+    <div>
+      <div class="flex items-center gap-3 mb-6">
+        <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style="background:rgba(139,92,246,0.15);border:1px solid rgba(139,92,246,0.25);">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+          </svg>
+        </div>
+        <h2 style="font-size:1.1rem;font-weight:800;letter-spacing:-0.02em;">Información Personal</h2>
+      </div>
+
+      <div class="flex flex-col gap-5">
+        <div>
+          <label class="field-label">Nombre Completo</label>
+          <input class="inp" type="text" placeholder="Tu nombre completo" id="f1-nombre">
+        </div>
+
+        <div class="grid sm:grid-cols-2 gap-4">
+          <div>
+            <label class="field-label">Email Profesional</label>
+            <input class="inp" type="email" placeholder="tu@email.com" id="f1-email">
+          </div>
+          <div>
+            <label class="field-label">Teléfono</label>
+            <input class="inp" type="tel" placeholder="+52 55 1234 5678" id="f1-tel">
+          </div>
+        </div>
+
+        <div>
+          <label class="field-label">LinkedIn <span style="font-weight:400;color:rgba(255,255,255,0.35);">(opcional pero recomendado)</span></label>
+          <input class="inp" type="url" placeholder="linkedin.com/in/tuperfil" id="f1-linkedin">
+          <p class="field-hint">Ayuda a las PYMEs a conocer tu trayectoria profesional</p>
+        </div>
+
+        <div>
+          <label class="field-label">Ubicación</label>
+          <input class="inp" type="text" placeholder="Ciudad, Estado, País" id="f1-ubicacion">
+        </div>
+      </div>
+    </div>
+
+    <!-- Nav -->
+    <div class="flex justify-end mt-8 pt-6 border-t" style="border-color:rgba(255,255,255,0.07);">
+      <button onclick="goTo(2)" class="inline-flex items-center gap-2.5 px-6 py-3 rounded-2xl text-sm font-bold transition-all duration-200 hover:scale-105 hover:opacity-90"
+        style="background:linear-gradient(135deg,#7c3aed,#a855f7);color:white;box-shadow:0 4px 20px rgba(124,58,237,0.35);">
+        Continuar
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- ─────────── STEP 2 ─────────── -->
+  <div class="step-panel" id="step-2">
+
+    <div class="flex items-center gap-3 mb-7">
+      <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style="background:rgba(139,92,246,0.15);border:1px solid rgba(139,92,246,0.25);">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+        </svg>
+      </div>
+      <h2 style="font-size:1.1rem;font-weight:800;letter-spacing:-0.02em;">Experiencia Profesional</h2>
+    </div>
+
+    <div class="flex flex-col gap-6">
+
+      <!-- Especialidades -->
+      <div>
+        <label class="field-label">Áreas de especialización <span style="font-weight:400;color:rgba(255,255,255,0.35);">(selecciona todas las que apliquen)</span></label>
+        <div class="flex flex-wrap gap-2 mt-2" id="chips-area">
+          <div class="chip" onclick="toggleChip(this)">Finanzas</div>
+          <div class="chip" onclick="toggleChip(this)">Marketing</div>
+          <div class="chip" onclick="toggleChip(this)">Operaciones</div>
+          <div class="chip" onclick="toggleChip(this)">Ventas</div>
+          <div class="chip" onclick="toggleChip(this)">Recursos Humanos</div>
+          <div class="chip" onclick="toggleChip(this)">Tecnología</div>
+          <div class="chip" onclick="toggleChip(this)">Logística</div>
+          <div class="chip" onclick="toggleChip(this)">Legal</div>
+          <div class="chip" onclick="toggleChip(this)">Estrategia</div>
+          <div class="chip" onclick="toggleChip(this)">Exportación</div>
+        </div>
+      </div>
+
+      <!-- Años de experiencia -->
+      <div>
+        <label class="field-label">Años de experiencia en consultoría o asesoría</label>
+        <select class="inp">
+          <option value="" disabled selected style="color:rgba(255,255,255,0.3);">Selecciona...</option>
+          <option>1 – 2 años</option>
+          <option>3 – 5 años</option>
+          <option>6 – 10 años</option>
+          <option>Más de 10 años</option>
+        </select>
+      </div>
+
+      <!-- Industrias -->
+      <div>
+        <label class="field-label">Industrias en las que has trabajado</label>
+        <div class="flex flex-wrap gap-2 mt-2" id="chips-ind">
+          <div class="chip" onclick="toggleChip(this)">Retail</div>
+          <div class="chip" onclick="toggleChip(this)">Manufactura</div>
+          <div class="chip" onclick="toggleChip(this)">Servicios</div>
+          <div class="chip" onclick="toggleChip(this)">Tecnología</div>
+          <div class="chip" onclick="toggleChip(this)">Alimentos y Bebidas</div>
+          <div class="chip" onclick="toggleChip(this)">Construcción</div>
+          <div class="chip" onclick="toggleChip(this)">Salud</div>
+          <div class="chip" onclick="toggleChip(this)">Educación</div>
+          <div class="chip" onclick="toggleChip(this)">Turismo</div>
+          <div class="chip" onclick="toggleChip(this)">Otro</div>
+        </div>
+      </div>
+
+      <!-- Bio -->
+      <div>
+        <label class="field-label">Descripción de tu perfil profesional</label>
+        <textarea class="inp" placeholder="Describe brevemente tu experiencia, logros más relevantes y el tipo de resultados que has generado en proyectos anteriores..."></textarea>
+        <p class="field-hint">Máximo 400 caracteres. Esta descripción la verán las PYMEs al revisar tu perfil.</p>
+      </div>
+
+      <!-- Caso de éxito -->
+      <div>
+        <label class="field-label">Caso de éxito más relevante <span style="font-weight:400;color:rgba(255,255,255,0.35);">(opcional)</span></label>
+        <textarea class="inp" placeholder="Ej: Ayudé a una empresa de retail a reducir costos operativos en 28% en 6 meses mediante una reestructura de su cadena de suministro..." style="min-height:80px;"></textarea>
+      </div>
+
+    </div>
+
+    <div class="flex justify-between mt-8 pt-6 border-t" style="border-color:rgba(255,255,255,0.07);">
+      <button onclick="goTo(1)" class="inline-flex items-center gap-2 px-5 py-3 rounded-2xl text-sm font-semibold transition hover:scale-105"
+        style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.7);">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        Atrás
+      </button>
+      <button onclick="goTo(3)" class="inline-flex items-center gap-2.5 px-6 py-3 rounded-2xl text-sm font-bold transition hover:scale-105 hover:opacity-90"
+        style="background:linear-gradient(135deg,#7c3aed,#a855f7);color:white;box-shadow:0 4px 20px rgba(124,58,237,0.35);">
+        Continuar
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- ─────────── STEP 3 ─────────── -->
+  <div class="step-panel" id="step-3">
+
+    <div class="flex items-center gap-3 mb-7">
+      <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style="background:rgba(139,92,246,0.15);border:1px solid rgba(139,92,246,0.25);">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+        </svg>
+      </div>
+      <h2 style="font-size:1.1rem;font-weight:800;letter-spacing:-0.02em;">Propuesta de Servicio</h2>
+    </div>
+
+    <div class="flex flex-col gap-6">
+
+      <!-- Retainer range -->
+      <div>
+        <div class="flex items-center justify-between mb-2">
+          <label class="field-label" style="margin-bottom:0;">Retainer mensual esperado (MXN)</label>
+          <span id="retainer-val" style="font-size:14px;font-weight:700;color:#a78bfa;">$25,000</span>
+        </div>
+        <input type="range" min="5000" max="100000" step="2500" value="25000"
+          oninput="document.getElementById('retainer-val').textContent = '$' + parseInt(this.value).toLocaleString('es-MX')">
+        <div class="flex justify-between mt-2" style="font-size:11px;color:rgba(255,255,255,0.3);">
+          <span>$5,000</span><span>$100,000+</span>
+        </div>
+        <p class="field-hint mt-1">Esto es solo referencial. El retainer final se acuerda con cada PYME.</p>
+      </div>
+
+      <!-- Disponibilidad -->
+      <div>
+        <label class="field-label">Disponibilidad semanal</label>
+        <div class="flex flex-wrap gap-2 mt-2">
+          <div class="chip" onclick="toggleSingle(this,'disp')">5–10 horas</div>
+          <div class="chip" onclick="toggleSingle(this,'disp')">10–20 horas</div>
+          <div class="chip active" onclick="toggleSingle(this,'disp')">20–30 horas</div>
+          <div class="chip" onclick="toggleSingle(this,'disp')">Tiempo completo</div>
+        </div>
+      </div>
+
+      <!-- Modalidad -->
+      <div>
+        <label class="field-label">Modalidad de trabajo preferida</label>
+        <div class="flex flex-wrap gap-2 mt-2">
+          <div class="chip" onclick="toggleSingle(this,'mod')">100% Remoto</div>
+          <div class="chip active" onclick="toggleSingle(this,'mod')">Híbrido</div>
+          <div class="chip" onclick="toggleSingle(this,'mod')">Presencial (CDMX)</div>
+          <div class="chip" onclick="toggleSingle(this,'mod')">Presencial (cualquier ciudad)</div>
+        </div>
+      </div>
+
+      <!-- Tipo de proyectos -->
+      <div>
+        <label class="field-label">Tipo de proyectos que buscas</label>
+        <div class="flex flex-wrap gap-2 mt-2">
+          <div class="chip" onclick="toggleChip(this)">Reducción de costos</div>
+          <div class="chip" onclick="toggleChip(this)">Incremento de ventas</div>
+          <div class="chip" onclick="toggleChip(this)">Transformación digital</div>
+          <div class="chip" onclick="toggleChip(this)">Mejora operativa</div>
+          <div class="chip" onclick="toggleChip(this)">Internacionalización</div>
+          <div class="chip" onclick="toggleChip(this)">Reestructura organizacional</div>
+        </div>
+      </div>
+
+      <!-- Resultados comprometibles -->
+      <div>
+        <label class="field-label">¿Qué tipo de resultados puedes comprometer?</label>
+        <textarea class="inp" placeholder="Ej: Incremento de ventas del 20-30%, reducción de costos operativos del 15-25%, implementación de CRM en 3 meses..." style="min-height:90px;"></textarea>
+        <p class="field-hint">Sé específico. Las PYMEs buscan asesores que puedan comprometerse con métricas concretas.</p>
+      </div>
+
+    </div>
+
+    <div class="flex justify-between mt-8 pt-6 border-t" style="border-color:rgba(255,255,255,0.07);">
+      <button onclick="goTo(2)" class="inline-flex items-center gap-2 px-5 py-3 rounded-2xl text-sm font-semibold transition hover:scale-105"
+        style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.7);">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        Atrás
+      </button>
+      <button onclick="goTo(4)" class="inline-flex items-center gap-2.5 px-6 py-3 rounded-2xl text-sm font-bold transition hover:scale-105 hover:opacity-90"
+        style="background:linear-gradient(135deg,#7c3aed,#a855f7);color:white;box-shadow:0 4px 20px rgba(124,58,237,0.35);">
+        Continuar
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- ─────────── STEP 4 ─────────── -->
+  <div class="step-panel" id="step-4">
+
+    <div class="flex items-center gap-3 mb-7">
+      <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style="background:rgba(139,92,246,0.15);border:1px solid rgba(139,92,246,0.25);">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+        </svg>
+      </div>
+      <h2 style="font-size:1.1rem;font-weight:800;letter-spacing:-0.02em;">Verificación y Compromisos</h2>
+    </div>
+
+    <!-- CV Upload -->
+    <div class="mb-6">
+      <label class="field-label">CV o Portfolio <span style="font-weight:400;color:rgba(255,255,255,0.35);">(PDF, máx. 5 MB)</span></label>
+      <div class="rounded-2xl border-2 border-dashed flex flex-col items-center justify-center py-10 px-5 text-center cursor-pointer transition hover:border-violet-500/50 hover:bg-violet-500/5"
+           style="border-color:rgba(255,255,255,0.12);"
+           onclick="document.getElementById('cv-file').click()">
+        <div class="w-12 h-12 rounded-2xl flex items-center justify-center mb-4" style="background:rgba(139,92,246,0.12);">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+          </svg>
+        </div>
+        <p style="font-size:14px;font-weight:600;color:rgba(255,255,255,0.7);" id="cv-label">Haz clic para subir tu CV</p>
+        <p style="font-size:12px;color:rgba(255,255,255,0.3);margin-top:4px;">PDF, DOC o DOCX — máximo 5 MB</p>
+        <input type="file" id="cv-file" accept=".pdf,.doc,.docx" style="display:none;"
+          onchange="document.getElementById('cv-label').textContent = this.files[0]?.name || 'Haz clic para subir tu CV'">
+      </div>
+    </div>
+
+    <!-- Compromisos -->
+    <div class="glass p-6 mb-6">
+      <p style="font-size:13px;font-weight:700;color:rgba(255,255,255,0.85);margin-bottom:16px;">Compromisos del Asesor</p>
+      <div class="flex flex-col gap-4">
+
+        <label class="cb-row" onclick="toggleCb(this)">
+          <div class="cb-box"></div>
+          <span style="font-size:13px;color:rgba(255,255,255,0.6);line-height:1.6;">
+            Entiendo que PymeBoost <strong style="color:rgba(255,255,255,0.85);">retiene el 10%</strong> de mis pagos mensuales como fondo de garantía, que se libera al completar el proyecto o según mediación.
+          </span>
+        </label>
+
+        <label class="cb-row" onclick="toggleCb(this)">
+          <div class="cb-box"></div>
+          <span style="font-size:13px;color:rgba(255,255,255,0.6);line-height:1.6;">
+            Me comprometo a trabajar en proyectos de <strong style="color:rgba(255,255,255,0.85);">4 a 8 meses</strong> con metas de desempeño específicas y medibles acordadas desde el inicio.
+          </span>
+        </label>
+
+        <label class="cb-row" onclick="toggleCb(this)">
+          <div class="cb-box"></div>
+          <span style="font-size:13px;color:rgba(255,255,255,0.6);line-height:1.6;">
+            Acepto que en caso de disputa, la decisión de un <strong style="color:rgba(255,255,255,0.85);">mediador neutral certificado</strong> es vinculante para la distribución del fondo de garantía.
+          </span>
+        </label>
+
+        <label class="cb-row" onclick="toggleCb(this)">
+          <div class="cb-box"></div>
+          <span style="font-size:13px;color:rgba(255,255,255,0.6);line-height:1.6;">
+            He leído y acepto los
+            <a href="#" style="color:#a78bfa;text-decoration:none;" onclick="event.stopPropagation()">Términos y Condiciones</a>
+            y la
+            <a href="#" style="color:#a78bfa;text-decoration:none;" onclick="event.stopPropagation()">Política de Privacidad</a>
+            de PymeBoost.
+          </span>
+        </label>
+
+      </div>
+    </div>
+
+    <!-- Info box -->
+    <div class="rounded-xl px-4 py-4 mb-6" style="background:rgba(124,58,237,0.08);border:1px solid rgba(139,92,246,0.2);">
+      <p style="font-size:13px;color:rgba(255,255,255,0.5);line-height:1.7;">
+        <strong style="color:rgba(255,255,255,0.8);font-weight:600;">¿Qué sigue después?</strong><br>
+        Tu solicitud será revisada en un plazo de <strong style="color:rgba(255,255,255,0.8);">3–5 días hábiles</strong>. Recibirás un email con el resultado de la verificación. Una vez aprobado, podrás acceder al marketplace y recibir solicitudes de PYMEs.
+      </p>
+    </div>
+
+    <div class="flex justify-between mt-8 pt-6 border-t" style="border-color:rgba(255,255,255,0.07);">
+      <button onclick="goTo(3)" class="inline-flex items-center gap-2 px-5 py-3 rounded-2xl text-sm font-semibold transition hover:scale-105"
+        style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.7);">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        Atrás
+      </button>
+      <button onclick="submitForm()" class="inline-flex items-center gap-2.5 px-6 py-3 rounded-2xl text-sm font-bold transition hover:scale-105 hover:opacity-90"
+        style="background:linear-gradient(135deg,#7c3aed,#a855f7);color:white;box-shadow:0 4px 20px rgba(124,58,237,0.35);">
+        Enviar solicitud
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- ─────────── SUCCESS ─────────── -->
+  <div class="step-panel" id="step-success">
+    <div class="text-center py-16">
+      <div class="w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-6" style="background:linear-gradient(135deg,rgba(124,58,237,0.3),rgba(168,85,247,0.2));border:1px solid rgba(139,92,246,0.3);">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      </div>
+      <h2 style="font-size:1.8rem;font-weight:900;letter-spacing:-0.03em;margin-bottom:12px;">¡Solicitud enviada!</h2>
+      <p style="font-size:15px;color:rgba(255,255,255,0.5);max-width:420px;margin:0 auto 32px;line-height:1.7;">
+        Revisaremos tu perfil en <strong style="color:rgba(255,255,255,0.8);">3–5 días hábiles</strong>. Te notificaremos por email con el resultado de tu verificación.
+      </p>
+      <div class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl mb-8" style="background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.2);">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        <span style="font-size:13px;color:#a78bfa;font-weight:500;">Revisa tu bandeja — te enviamos un email de confirmación</span>
+      </div>
+      <div>
+        <a href="PymeBoost Landing.html" class="inline-flex items-center gap-2 px-5 py-3 rounded-2xl text-sm font-semibold transition hover:scale-105"
+          style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.7);">
+          Volver al inicio
+        </a>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+  var current = 1;
+  var labels = ['', 'Paso 1 de 4 — Información Personal', 'Paso 2 de 4 — Experiencia Profesional', 'Paso 3 de 4 — Propuesta de Servicio', 'Paso 4 de 4 — Verificación y Compromisos'];
+
+  function goTo(n) {
+    document.getElementById('step-' + current).classList.remove('active');
+    current = n;
+    var panel = document.getElementById('step-' + n);
+    if (panel) panel.classList.add('active');
+
+    // Progress bars
+    for (var i = 1; i <= 4; i++) {
+      var bar = document.getElementById('prog-' + i);
+      if (!bar) continue;
+      if (i < n) bar.style.width = '100%';
+      else if (i === n) bar.style.width = '100%';
+      else bar.style.width = '0%';
+    }
+
+    // Label
+    var lbl = document.getElementById('step-label');
+    if (lbl && labels[n]) lbl.textContent = 'Proceso de verificación profesional — ' + labels[n].replace('Paso ','Paso ');
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  /* submitForm definido en js/pages/registro-asesor.js */
+
+  function toggleChip(el) {
+    el.classList.toggle('active');
+  }
+
+  function toggleSingle(el, group) {
+    var parent = el.closest('[id^="chips"]') || el.parentElement;
+    parent.querySelectorAll('.chip').forEach(function(c) { c.classList.remove('active'); });
+    el.classList.add('active');
+  }
+
+  function toggleCb(label) {
+    var box = label.querySelector('.cb-box');
+    box.classList.toggle('checked');
+    if (box.classList.contains('checked')) {
+      box.innerHTML = '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+    } else {
+      box.innerHTML = '';
+    }
+  }
+</script>
+<script src="js/api.js"></script>
+<script src="js/pages/registro-asesor.js"></script>
+</body>
+</html>

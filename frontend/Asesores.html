@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Buscar Asesores — PymeBoost</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config={theme:{extend:{fontFamily:{sans:['Outfit','sans-serif']}}}}</script>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box}body{margin:0;background:#09090b;color:#fafafa;font-family:'Outfit',sans-serif;display:flex;height:100vh;overflow:hidden}
+    .sidebar{width:220px;min-width:220px;background:#0d0d10;border-right:1px solid rgba(255,255,255,0.06);display:flex;flex-direction:column;height:100vh;position:sticky;top:0}
+    .nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;font-size:13px;font-weight:500;color:rgba(255,255,255,0.5);text-decoration:none;transition:all .15s;border:1px solid transparent}
+    .nav-item:hover{background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.85)}
+    .nav-item.active{background:rgba(124,58,237,0.15);color:#a78bfa;border-color:rgba(139,92,246,0.2)}
+    .glass{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:16px}
+    .pill{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:100px;font-size:11px;font-weight:600}
+    .match-high{background:rgba(16,185,129,0.12);color:#10b981;border:1px solid rgba(16,185,129,0.25)}
+    .match-mid{background:rgba(139,92,246,0.12);color:#a78bfa;border:1px solid rgba(139,92,246,0.25)}
+    .match-low{background:rgba(245,158,11,0.12);color:#f59e0b;border:1px solid rgba(245,158,11,0.25)}
+    .btn-primary{display:inline-flex;align-items:center;gap:7px;padding:8px 16px;border-radius:11px;background:linear-gradient(135deg,#7c3aed,#a855f7);color:white;font-size:12px;font-weight:700;border:none;cursor:pointer;text-decoration:none;transition:transform .15s;box-shadow:0 3px 12px rgba(124,58,237,0.3)}
+    .btn-primary:hover{transform:scale(1.03)}
+    .btn-secondary{display:inline-flex;align-items:center;gap:7px;padding:8px 16px;border-radius:11px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.75);font-size:12px;font-weight:600;cursor:pointer;text-decoration:none;transition:all .15s}
+    .btn-secondary:hover{background:rgba(255,255,255,0.08)}
+    .inp{width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:9px 14px;font-size:13px;font-family:'Outfit',sans-serif;color:white;outline:none;transition:border-color .2s}
+    .inp::placeholder{color:rgba(255,255,255,0.25)}.inp:focus{border-color:rgba(139,92,246,0.6)}
+    select.inp option{background:#1a1a2e}
+    .advisor-card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:16px;padding:18px;transition:all .2s;cursor:pointer;}
+    .advisor-card:hover{background:rgba(255,255,255,0.05);border-color:rgba(139,92,246,0.25);transform:translateY(-1px);}
+    .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.65);backdrop-filter:blur(8px);z-index:50;display:flex;align-items:center;justify-content:center;padding:16px}
+    .modal-box{background:#13131a;border:1px solid rgba(255,255,255,0.1);border-radius:20px;width:100%;max-width:540px;max-height:88vh;overflow-y:auto}
+    ::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:rgba(139,92,246,0.3);border-radius:10px}
+    input[type=range]{-webkit-appearance:none;width:100%;height:3px;background:rgba(255,255,255,0.1);border-radius:10px;outline:none}
+    input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#7c3aed;cursor:pointer;border:2px solid white}
+  </style>
+</head>
+<body data-page="asesores">
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div style="padding:18px 14px;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;gap:10px;">
+    <div style="width:28px;height:28px;border-radius:9px;background:linear-gradient(135deg,#7c3aed,#a855f7);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+    </div>
+    <div><div style="font-weight:700;font-size:14px;">PymeBoost</div><div style="font-size:10px;color:rgba(255,255,255,0.35);" id="panel-label">Panel PYME</div></div>
+  </div>
+  <nav style="flex:1;padding:10px 8px;display:flex;flex-direction:column;gap:2px;" id="app-nav"></nav>
+  <div style="padding:12px;border-top:1px solid rgba(255,255,255,0.06);">
+    <div style="display:flex;align-items:center;gap:10px;padding:8px;border-radius:10px;">
+      <div style="width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#a855f7);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;" id="user-initials">—</div>
+      <div style="min-width:0;"><div style="font-size:12px;font-weight:600;color:rgba(255,255,255,0.85);" id="user-name">—</div><div style="font-size:10px;color:rgba(255,255,255,0.35);" id="user-sub">—</div></div>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div style="flex:1;display:flex;flex-direction:column;overflow:hidden;">
+  <header style="height:56px;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:space-between;padding:0 24px;flex-shrink:0;background:#09090b;">
+    <div>
+      <h1 style="font-size:15px;font-weight:700;margin:0;">Buscar Asesores</h1>
+      <p style="font-size:11px;color:rgba(255,255,255,0.35);margin:1px 0 0;">Ordenados por % de match con tu perfil</p>
+    </div>
+    <div style="font-size:12px;color:rgba(255,255,255,0.35);" id="count-label">Mostrando 6 asesores</div>
+  </header>
+
+  <div style="flex:1;overflow:hidden;display:flex;">
+    <!-- Filters sidebar -->
+    <div style="width:220px;flex-shrink:0;border-right:1px solid rgba(255,255,255,0.06);padding:16px;overflow-y:auto;display:flex;flex-direction:column;gap:16px;">
+      <div>
+        <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;">Buscar</div>
+        <div style="position:relative;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);pointer-events:none;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input class="inp" type="text" placeholder="Nombre o keywords..." style="padding-left:30px;font-size:12px;" oninput="filterAdvisors()">
+        </div>
+      </div>
+      <div>
+        <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;">Especialización</div>
+        <select class="inp" style="font-size:12px;" onchange="filterAdvisors()">
+          <option value="">Todas</option>
+          <option>Marketing Digital</option>
+          <option>Optimización de Ventas</option>
+          <option>Eficiencia Operacional</option>
+          <option>Gestión Financiera</option>
+          <option>Recursos Humanos</option>
+          <option>Transformación Digital</option>
+          <option>Logística</option>
+          <option>Estrategia de Expansión</option>
+        </select>
+      </div>
+      <div>
+        <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;">Industria</div>
+        <select class="inp" style="font-size:12px;" onchange="filterAdvisors()">
+          <option value="">Todas</option>
+          <option>Retail / Comercio</option>
+          <option>Manufactura</option>
+          <option>Servicios</option>
+          <option>Tecnología</option>
+        </select>
+      </div>
+      <div>
+        <div style="display:flex;justify-content:space-between;font-size:11px;font-weight:700;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;">
+          <span>Match mínimo</span><span id="match-val" style="color:#a78bfa;">60%</span>
+        </div>
+        <input type="range" min="0" max="100" step="10" value="60" oninput="document.getElementById('match-val').textContent=this.value+'%'">
+      </div>
+    </div>
+
+    <!-- Results grid -->
+    <main style="flex:1;overflow-y:auto;padding:20px;">
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;" id="advisors-grid">
+
+        <!-- Advisor: María González -->
+        <div class="advisor-card" onclick="openDetail('mg')">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#a855f7);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;">MG</div>
+              <div>
+                <div style="font-size:14px;font-weight:700;">María González</div>
+                <div style="font-size:11px;color:rgba(255,255,255,0.4);">Marketing Digital · CDMX</div>
+              </div>
+            </div>
+            <span class="pill match-high">92%</span>
+          </div>
+          <p style="font-size:12px;color:rgba(255,255,255,0.45);line-height:1.55;margin-bottom:12px;">Proyectos de 5-7 meses en ecommerce retail. +42% ventas promedio, -30% en CAC. 18 proyectos completados.</p>
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:rgba(255,255,255,0.35);margin-bottom:12px;">
+            <span>12 años · 18 proyectos</span><span>$38k/mes + 15% bono</span>
+          </div>
+          <button onclick="event.stopPropagation();openDetail('mg')" class="btn-primary" style="width:100%;justify-content:center;font-size:11px;padding:7px;">Ver Perfil Completo</button>
+        </div>
+
+        <!-- Advisor: Jorge Méndez -->
+        <div class="advisor-card" onclick="openDetail('jm')">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div style="width:40px;height:40px;border-radius:50%;background:rgba(245,158,11,0.2);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fbbf24;flex-shrink:0;">JM</div>
+              <div>
+                <div style="font-size:14px;font-weight:700;">Jorge Méndez</div>
+                <div style="font-size:11px;color:rgba(255,255,255,0.4);">Eficiencia Operacional · MTY</div>
+              </div>
+            </div>
+            <span class="pill match-mid">78%</span>
+          </div>
+          <p style="font-size:12px;color:rgba(255,255,255,0.45);line-height:1.55;margin-bottom:12px;">Lean Manufacturing y optimización de cadena de suministro. Proyectos de 6-8 meses, reducción de costos del 25-35%.</p>
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:rgba(255,255,255,0.35);margin-bottom:12px;"><span>14 años · 24 proyectos</span><span>$48k/mes + 18% bono</span></div>
+          <button onclick="event.stopPropagation();openDetail('jm')" class="btn-primary" style="width:100%;justify-content:center;font-size:11px;padding:7px;">Ver Perfil Completo</button>
+        </div>
+
+        <!-- Advisor: Ana Herrera -->
+        <div class="advisor-card" onclick="openDetail('ah')">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div style="width:40px;height:40px;border-radius:50%;background:rgba(139,92,246,0.2);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#a78bfa;flex-shrink:0;">AH</div>
+              <div>
+                <div style="font-size:14px;font-weight:700;">Ana Herrera</div>
+                <div style="font-size:11px;color:rgba(255,255,255,0.4);">Gestión Financiera · GDL</div>
+              </div>
+            </div>
+            <span class="pill match-mid">71%</span>
+          </div>
+          <p style="font-size:12px;color:rgba(255,255,255,0.45);line-height:1.55;margin-bottom:12px;">Reestructura financiera para PYME retail y servicios. Reducción de costos del 22-31%, mejora en flujo de caja.</p>
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:rgba(255,255,255,0.35);margin-bottom:12px;"><span>11 años · 15 proyectos</span><span>$36k/mes + 12% bono</span></div>
+          <button class="btn-primary" style="width:100%;justify-content:center;font-size:11px;padding:7px;">Ver Perfil Completo</button>
+        </div>
+
+        <!-- Advisor: Carlos Ruiz -->
+        <div class="advisor-card">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div style="width:40px;height:40px;border-radius:50%;background:rgba(16,185,129,0.15);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#34d399;flex-shrink:0;">CR</div>
+              <div>
+                <div style="font-size:14px;font-weight:700;">Carlos Ruiz</div>
+                <div style="font-size:11px;color:rgba(255,255,255,0.4);">Transform. Digital · CDMX</div>
+              </div>
+            </div>
+            <span class="pill match-low">65%</span>
+          </div>
+          <p style="font-size:12px;color:rgba(255,255,255,0.45);line-height:1.55;margin-bottom:12px;">Implementación de ERP, CRM y ecommerce para PYMEs. +38% eficiencia promedio en 5-6 meses de proyecto.</p>
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:rgba(255,255,255,0.35);margin-bottom:12px;"><span>9 años · 12 proyectos</span><span>$42k/mes + 15% bono</span></div>
+          <button class="btn-primary" style="width:100%;justify-content:center;font-size:11px;padding:7px;">Ver Perfil Completo</button>
+        </div>
+
+        <!-- Advisor: Roberto Sánchez -->
+        <div class="advisor-card">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div style="width:40px;height:40px;border-radius:50%;background:rgba(59,130,246,0.15);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#60a5fa;flex-shrink:0;">RS</div>
+              <div>
+                <div style="font-size:14px;font-weight:700;">Roberto Sánchez</div>
+                <div style="font-size:11px;color:rgba(255,255,255,0.4);">Optimización Ventas · CDMX</div>
+              </div>
+            </div>
+            <span class="pill match-low">62%</span>
+          </div>
+          <p style="font-size:12px;color:rgba(255,255,255,0.45);line-height:1.55;margin-bottom:12px;">Metodología de ventas consultivas B2B y B2C. Incremento promedio de +45% en tasa de cierre en 4-6 meses.</p>
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:rgba(255,255,255,0.35);margin-bottom:12px;"><span>8 años · 10 proyectos</span><span>$34k/mes + 20% bono</span></div>
+          <button class="btn-primary" style="width:100%;justify-content:center;font-size:11px;padding:7px;">Ver Perfil Completo</button>
+        </div>
+
+        <!-- Advisor: Patricia Luna -->
+        <div class="advisor-card">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div style="width:40px;height:40px;border-radius:50%;background:rgba(236,72,153,0.15);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#f472b6;flex-shrink:0;">PL</div>
+              <div>
+                <div style="font-size:14px;font-weight:700;">Patricia Luna</div>
+                <div style="font-size:11px;color:rgba(255,255,255,0.4);">Recursos Humanos · CDMX</div>
+              </div>
+            </div>
+            <span class="pill match-low" style="background:rgba(100,116,139,0.12);color:#94a3b8;border-color:rgba(100,116,139,0.25);">48%</span>
+          </div>
+          <p style="font-size:12px;color:rgba(255,255,255,0.45);line-height:1.55;margin-bottom:12px;">Transformación cultural y estructura organizacional. Reducción de rotación del 40% promedio en proyectos de 5-7 meses.</p>
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:rgba(255,255,255,0.35);margin-bottom:12px;"><span>10 años · 13 proyectos</span><span>$30k/mes + 10% bono</span></div>
+          <button class="btn-secondary" style="width:100%;justify-content:center;font-size:11px;padding:7px;">Ver Perfil Completo</button>
+        </div>
+
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- Modal: Perfil Asesor Detalle -->
+<div id="modal-detail" style="display:none;" class="modal-bg" onclick="if(event.target===this)this.style.display='none'">
+  <div class="modal-box">
+    <div style="padding:20px 20px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.07);">
+      <span style="font-size:14px;font-weight:700;" id="detail-title">Perfil del Asesor</span>
+      <button onclick="document.getElementById('modal-detail').style.display='none'" style="background:none;border:none;color:rgba(255,255,255,0.4);cursor:pointer;">✕</button>
+    </div>
+    <div style="padding:20px;" id="detail-content"></div>
+  </div>
+</div>
+
+<script>
+var advisors = {
+  mg: {
+    initials:'MG', name:'María González', role:'Marketing Digital', loc:'CDMX', match:92, matchCls:'match-high',
+    years:12, projects:18, rate:'$38,000/mes + 15% bono',
+    bio:'Especialista en crecimiento digital para retail con 12 años de experiencia. He liderado proyectos de ecommerce, paid ads, SEO y CRM en más de 18 empresas retail, logrando un promedio de +42% en ventas y -30% en costo de adquisición de clientes.',
+    industries:['Retail','E-commerce','Moda','Consumo masivo'],
+    cases:[
+      {client:'Retail Nacional (anónimo)',industry:'Retail',dur:'6 meses',kpis:'+48% ventas online, -25% CAC, +2.3x ROAS'},
+      {client:'Marca de Ropa MX',industry:'Moda',dur:'7 meses',kpis:'+62% conversión, +38% ticket promedio'},
+    ]
+  },
+  jm: {
+    initials:'JM', name:'Jorge Méndez', role:'Eficiencia Operacional', loc:'MTY', match:78, matchCls:'match-mid',
+    years:14, projects:24, rate:'$48,000/mes + 18% bono',
+    bio:'Consultor en Lean Manufacturing y optimización de operaciones con 14 años. Especializado en reducción de desperdicios, mejora de procesos y cadena de suministro. Promedio de reducción de costos del 28% en proyectos de manufactura y distribución.',
+    industries:['Manufactura','Distribución','Logística','Automotriz'],
+    cases:[
+      {client:'Distribuidora Regional',industry:'Logística',dur:'8 meses',kpis:'-32% costos operativos, +18% velocidad de entrega'},
+      {client:'Manufactura del Norte',industry:'Manufactura',dur:'6 meses',kpis:'-28% desperdicio, +22% productividad línea'},
+    ]
+  },
+  ah: {
+    initials:'AH', name:'Ana Herrera', role:'Gestión Financiera', loc:'GDL', match:71, matchCls:'match-mid',
+    years:11, projects:15, rate:'$36,000/mes + 12% bono',
+    bio:'CFO as-a-Service para PYMEs en etapa de crecimiento. Especializada en reestructura financiera, flujo de caja, análisis de rentabilidad y preparación para financiamiento. Promedio de mejora de margen del 8-12% en proyectos de 5-6 meses.',
+    industries:['Retail','Servicios','Construcción','Hospitalidad'],
+    cases:[
+      {client:'Cadena Retail GDL',industry:'Retail',dur:'5 meses',kpis:'+11% margen bruto, -40% cuentas por cobrar'},
+      {client:'Empresa de Servicios',industry:'Servicios',dur:'6 meses',kpis:'Flujo de caja positivo en Mes 3, +22% EBITDA'},
+    ]
+  }
+};
+
+function openDetail(id) {
+  var a = advisors[id];
+  if (!a) return;
+  document.getElementById('detail-title').textContent = a.name + ' — Perfil Completo';
+  var cases = a.cases.map(function(c){
+    return '<div style="background:rgba(255,255,255,0.03);border-radius:10px;padding:12px;margin-bottom:8px;"><div style="font-size:12px;font-weight:600;margin-bottom:4px;">'+c.client+' · '+c.industry+'</div><div style="font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:4px;">'+c.dur+'</div><div style="font-size:11px;color:#a78bfa;font-weight:600;">'+c.kpis+'</div></div>';
+  }).join('');
+  var inds = a.industries.map(function(i){return '<span style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:7px;padding:3px 9px;font-size:11px;color:rgba(255,255,255,0.6);">'+i+'</span>';}).join('');
+  document.getElementById('detail-content').innerHTML =
+    '<div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;">'+
+    '<div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#a855f7);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;flex-shrink:0;">'+a.initials+'</div>'+
+    '<div><div style="font-size:16px;font-weight:800;">'+a.name+'</div><div style="font-size:12px;color:rgba(255,255,255,0.45);">'+a.role+' · '+a.loc+'</div><span class="pill '+a.matchCls+'" style="font-size:10px;margin-top:6px;display:inline-flex;">'+a.match+'% match</span></div></div>'+
+    '<p style="font-size:13px;color:rgba(255,255,255,0.5);line-height:1.7;margin-bottom:16px;">'+a.bio+'</p>'+
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;">'+
+    '<div class="glass" style="padding:10px;border-radius:10px;"><div style="font-size:18px;font-weight:800;color:white;">'+a.years+'</div><div style="font-size:11px;color:rgba(255,255,255,0.35);">años exp.</div></div>'+
+    '<div class="glass" style="padding:10px;border-radius:10px;"><div style="font-size:18px;font-weight:800;color:white;">'+a.projects+'</div><div style="font-size:11px;color:rgba(255,255,255,0.35);">proyectos</div></div>'+
+    '</div>'+
+    '<div style="margin-bottom:14px;"><div style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;">Industrias</div><div style="display:flex;flex-wrap:wrap;gap:5px;">'+inds+'</div></div>'+
+    '<div style="margin-bottom:16px;"><div style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;">Casos de éxito</div>'+cases+'</div>'+
+    '<div style="font-size:12px;color:rgba(255,255,255,0.4);margin-bottom:16px;">'+a.rate+'</div>'+
+    '<div style="display:flex;gap:10px;">'+
+    '<button onclick="document.getElementById(\'modal-detail\').style.display=\'none\'" class="btn-secondary" style="flex:1;justify-content:center;">Cerrar</button>'+
+    '<button onclick="document.getElementById(\'modal-detail\').style.display=\'none\'" class="btn-primary" style="flex:1;justify-content:center;">Invitar a Proyecto →</button>'+
+    '</div>';
+  document.getElementById('modal-detail').style.display='flex';
+}
+function filterAdvisors(){/* Filtering would be dynamic with real data */}
+</script>
+<script src="js/api.js"></script>
+<script src="js/app-shell.js"></script>
+<script src="js/pages/asesores.js"></script>
+</body>
+</html>

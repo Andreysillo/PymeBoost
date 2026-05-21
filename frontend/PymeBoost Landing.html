@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PymeBoost — Impulsa tu PYME con Expertos</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Outfit', 'sans-serif'] },
+          colors: {
+            violet: {
+              450: '#8b5cf6',
+              550: '#7c3aed',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body { margin: 0; background: #09090b; color: #fafafa; font-family: 'Outfit', sans-serif; overflow-x: hidden; }
+
+    /* Noise texture overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+      opacity: .4;
+    }
+
+    /* Glow blobs */
+    .glow-blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(120px);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Glass card */
+    .glass {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      backdrop-filter: blur(12px);
+    }
+    .glass-strong {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.10);
+    }
+
+    /* Gradient text */
+    .grad-text {
+      background: linear-gradient(135deg, #ffffff 0%, #a78bfa 60%, #7c3aed 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* Animated underline */
+    .nav-link {
+      position: relative;
+      color: rgba(255,255,255,0.65);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+    .nav-link:hover { color: white; }
+    .nav-link::after {
+      content: '';
+      position: absolute;
+      bottom: -2px; left: 0;
+      width: 0; height: 1px;
+      background: #8b5cf6;
+      transition: width 0.25s ease;
+    }
+    .nav-link:hover::after { width: 100%; }
+
+    /* Check icon */
+    .check-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+      color: rgba(255,255,255,0.75);
+      font-weight: 400;
+    }
+    .check-item svg { flex-shrink: 0; }
+
+    /* Step connector */
+    .step-line {
+      position: absolute;
+      top: 20px;
+      left: calc(50% + 20px);
+      width: calc(100% - 40px);
+      height: 1px;
+      background: linear-gradient(90deg, rgba(139,92,246,0.5) 0%, rgba(139,92,246,0.1) 100%);
+    }
+
+    /* Fade-in animation */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .fade-up { animation: fadeUp 0.7s ease forwards; }
+    .delay-1 { animation-delay: 0.1s; opacity: 0; }
+    .delay-2 { animation-delay: 0.2s; opacity: 0; }
+    .delay-3 { animation-delay: 0.3s; opacity: 0; }
+    .delay-4 { animation-delay: 0.45s; opacity: 0; }
+    .delay-5 { animation-delay: 0.6s; opacity: 0; }
+
+    /* Stat counter */
+    .stat-number {
+      font-size: 2.25rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #ffffff, #a78bfa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1;
+    }
+
+    /* Pill badge */
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(139,92,246,0.15);
+      border: 1px solid rgba(139,92,246,0.3);
+      border-radius: 100px;
+      padding: 5px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #a78bfa;
+      letter-spacing: 0.03em;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(139,92,246,0.3); border-radius: 10px; }
+
+    /* Button hover glow */
+    .btn-primary {
+      position: relative;
+      overflow: hidden;
+    }
+    .btn-primary::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(255,255,255,0.12);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .btn-primary:hover::before { opacity: 1; }
+
+    /* Mobile menu */
+    #mobile-menu { display: none; }
+    #mobile-menu.open { display: block; }
+  </style>
+</head>
+<body>
+
+<!-- ── NAVBAR ──────────────────────────────────────────────── -->
+<nav class="fixed top-0 inset-x-0 z-50 transition-all duration-300" id="navbar">
+  <div class="max-w-6xl mx-auto px-5 flex items-center justify-between h-16">
+
+    <!-- Logo -->
+    <a href="#" class="flex items-center gap-2.5 no-underline">
+      <div class="w-8 h-8 rounded-xl flex items-center justify-center" style="background: linear-gradient(135deg,#7c3aed,#a855f7);">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+          <polyline points="17 6 23 6 23 12"></polyline>
+        </svg>
+      </div>
+      <span style="font-weight:700;font-size:17px;color:white;letter-spacing:-0.01em;">PymeBoost</span>
+    </a>
+
+    <!-- Desktop nav -->
+    <div class="hidden md:flex items-center gap-8">
+      <a href="#como-funciona" class="nav-link">Cómo funciona</a>
+      <a href="#para-pymes" class="nav-link">Para PYMEs</a>
+      <a href="#para-asesores" class="nav-link">Para Asesores</a>
+    </div>
+
+    <!-- Desktop CTAs -->
+    <div class="hidden md:flex items-center gap-3">
+      <a href="Ingresar.html" class="nav-link">Ingresar</a>
+      <a href="Dashboard PYME.html" class="nav-link" style="font-weight:600;">Soy una PYME</a>
+      <a href="Registro Asesor.html"
+         class="px-4 py-2 rounded-xl text-sm font-semibold border transition-all duration-200 hover:bg-white hover:text-[#09090b]"
+         style="border-color:rgba(139,92,246,0.6);color:rgba(255,255,255,0.9);">
+        Soy Asesor
+      </a>
+    </div>
+
+    <!-- Mobile hamburger -->
+    <button id="menu-btn" onclick="document.getElementById('mobile-menu').classList.toggle('open')"
+      class="md:hidden p-2 rounded-lg"
+      style="color:rgba(255,255,255,0.7);">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <line x1="3" y1="12" x2="21" y2="12"></line>
+        <line x1="3" y1="6" x2="21" y2="6"></line>
+        <line x1="3" y1="18" x2="21" y2="18"></line>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Mobile menu -->
+  <div id="mobile-menu" class="glass md:hidden px-5 pb-4 border-t" style="border-color:rgba(255,255,255,0.07);">
+    <div class="flex flex-col gap-3 pt-3">
+      <a href="#como-funciona" class="nav-link text-sm py-1">Cómo funciona</a>
+      <a href="#para-pymes" class="nav-link text-sm py-1">Para PYMEs</a>
+      <a href="#para-asesores" class="nav-link text-sm py-1">Para Asesores</a>
+      <div class="flex gap-2 pt-2">
+        <a href="#" class="flex-1 text-center py-2 rounded-xl text-sm font-semibold" style="background:rgba(139,92,246,0.15);color:#a78bfa;border:1px solid rgba(139,92,246,0.3);">Soy PYME</a>
+        <a href="#" class="flex-1 text-center py-2 rounded-xl text-sm font-semibold" style="background:linear-gradient(135deg,#7c3aed,#a855f7);color:white;">Soy Asesor</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- ── HERO ────────────────────────────────────────────────── -->
+<section class="relative min-h-screen flex flex-col items-center justify-center text-center px-5 pt-20 pb-16 overflow-hidden">
+
+  <!-- Glow blobs -->
+  <div class="glow-blob w-96 h-96 -top-20 -left-20 opacity-20" style="background:#7c3aed;"></div>
+  <div class="glow-blob w-80 h-80 top-1/3 -right-20 opacity-15" style="background:#a855f7;"></div>
+  <div class="glow-blob w-72 h-72 bottom-0 left-1/3 opacity-10" style="background:#6d28d9;"></div>
+
+  <!-- Grid lines background -->
+  <div class="absolute inset-0 opacity-5" style="background-image: linear-gradient(rgba(139,92,246,1) 1px, transparent 1px), linear-gradient(90deg, rgba(139,92,246,1) 1px, transparent 1px); background-size: 60px 60px;"></div>
+
+  <div class="relative z-10 max-w-4xl mx-auto">
+
+    <!-- Pill badge -->
+    <div class="fade-up delay-1 flex justify-center mb-7">
+      <div class="pill">
+        <span style="width:6px;height:6px;border-radius:50%;background:#a78bfa;display:inline-block;"></span>
+        Plataforma de performance para PYMEs
+      </div>
+    </div>
+
+    <!-- Headline -->
+    <h1 class="fade-up delay-2" style="font-size:clamp(2.4rem,6vw,4rem);font-weight:900;line-height:1.1;letter-spacing:-0.03em;margin:0 0 24px;">
+      Impulsa tu PYME con<br>
+      <span class="grad-text">Expertos Especializados</span>
+    </h1>
+
+    <!-- Subheadline -->
+    <p class="fade-up delay-3" style="font-size:clamp(1rem,2vw,1.15rem);color:rgba(255,255,255,0.55);max-width:600px;margin:0 auto 40px;line-height:1.7;font-weight:400;">
+      Conectamos tu empresa con asesores profesionales que implementan mejoras estratégicas
+      y <strong style="color:rgba(255,255,255,0.8);font-weight:600;">cobran solo cuando generas resultados reales.</strong>
+      Sin riesgos, con garantías.
+    </p>
+
+    <!-- CTA Buttons -->
+    <div class="fade-up delay-4 flex flex-col sm:flex-row items-center justify-center gap-3 mb-14">
+      <a href="Registro PYME.html"
+         class="btn-primary inline-flex items-center gap-2.5 px-6 py-3.5 rounded-2xl text-sm font-bold transition-all duration-200 hover:scale-105 hover:shadow-lg"
+         style="background:linear-gradient(135deg,#7c3aed,#a855f7);color:white;box-shadow:0 8px 32px rgba(124,58,237,0.35);">
+        Registrar mi Empresa
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+      <a href="Registro Asesor.html"
+         class="inline-flex items-center gap-2.5 px-6 py-3.5 rounded-2xl text-sm font-semibold transition-all duration-200 hover:scale-105"
+         style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.85);">
+        Unirme como Asesor
+      </a>
+    </div>
+
+    <!-- Trust badges -->
+    <div class="fade-up delay-5 flex flex-wrap items-center justify-center gap-x-8 gap-y-3">
+      <span class="check-item" style="font-size:13px;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        Sin pago hasta ver resultados
+      </span>
+      <span class="check-item" style="font-size:13px;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        Contratos legalmente vinculantes
+      </span>
+      <span class="check-item" style="font-size:13px;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        Asesores verificados
+      </span>
+    </div>
+  </div>
+
+  <!-- Scroll indicator -->
+  <div class="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1.5 opacity-30">
+    <span style="font-size:11px;font-weight:500;letter-spacing:0.1em;color:white;">SCROLL</span>
+    <div style="width:1px;height:32px;background:linear-gradient(to bottom, white, transparent);"></div>
+  </div>
+</section>
+
+<!-- ── STATS STRIP ─────────────────────────────────────────── -->
+<section class="relative z-10 py-16 border-y" style="border-color:rgba(255,255,255,0.06);">
+  <div class="max-w-5xl mx-auto px-5">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+
+      <div class="flex flex-col items-center gap-3">
+        <div class="w-12 h-12 rounded-2xl flex items-center justify-center" style="background:rgba(139,92,246,0.12);border:1px solid rgba(139,92,246,0.2);">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+        </div>
+        <div class="stat-number">500+</div>
+        <p style="font-size:13px;color:rgba(255,255,255,0.45);font-weight:400;">PYMEs Registradas</p>
+      </div>
+
+      <div class="flex flex-col items-center gap-3">
+        <div class="w-12 h-12 rounded-2xl flex items-center justify-center" style="background:rgba(139,92,246,0.12);border:1px solid rgba(139,92,246,0.2);">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
+            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+          </svg>
+        </div>
+        <div class="stat-number">200+</div>
+        <p style="font-size:13px;color:rgba(255,255,255,0.45);font-weight:400;">Asesores Verificados</p>
+      </div>
+
+      <div class="flex flex-col items-center gap-3">
+        <div class="w-12 h-12 rounded-2xl flex items-center justify-center" style="background:rgba(139,92,246,0.12);border:1px solid rgba(139,92,246,0.2);">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+          </svg>
+        </div>
+        <div class="stat-number">1,200+</div>
+        <p style="font-size:13px;color:rgba(255,255,255,0.45);font-weight:400;">Contratos Completados</p>
+      </div>
+
+      <div class="flex flex-col items-center gap-3">
+        <div class="w-12 h-12 rounded-2xl flex items-center justify-center" style="background:rgba(139,92,246,0.12);border:1px solid rgba(139,92,246,0.2);">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="20" x2="18" y2="10"/>
+            <line x1="12" y1="20" x2="12" y2="4"/>
+            <line x1="6" y1="20" x2="6" y2="14"/>
+          </svg>
+        </div>
+        <div class="stat-number">87%</div>
+        <p style="font-size:13px;color:rgba(255,255,255,0.45);font-weight:400;">Tasa de Éxito</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ── PARA PYMES / ASESORES ──────────────────────────────── -->
+<section id="para-pymes" class="relative py-24 px-5 overflow-hidden">
+  <div class="glow-blob w-96 h-96 top-1/2 -left-48 opacity-10" style="background:#7c3aed;"></div>
+
+  <div class="relative z-10 max-w-5xl mx-auto">
+
+    <!-- Section label -->
+    <div class="text-center mb-14">
+      <p class="pill inline-flex mb-4">Una plataforma, dos experiencias</p>
+      <h2 style="font-size:clamp(1.8rem,4vw,2.6rem);font-weight:800;letter-spacing:-0.025em;line-height:1.15;">
+        Diseñado para <span class="grad-text">ambos lados</span> del negocio
+      </h2>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-5" id="para-asesores">
+
+      <!-- Para PYMEs -->
+      <div class="glass rounded-3xl p-8 relative overflow-hidden group transition-all duration-300 hover:border-violet-500/30" style="border-color:rgba(255,255,255,0.08);">
+        <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" style="background:radial-gradient(circle at 30% 30%, rgba(124,58,237,0.08) 0%, transparent 60%);"></div>
+
+        <!-- Icon -->
+        <div class="w-12 h-12 rounded-2xl flex items-center justify-center mb-6" style="background:rgba(139,92,246,0.15);border:1px solid rgba(139,92,246,0.25);">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <circle cx="12" cy="12" r="6"/>
+            <circle cx="12" cy="12" r="2"/>
+          </svg>
+        </div>
+
+        <div class="pill mb-4" style="font-size:11px;">Para PYMEs</div>
+        <h3 style="font-size:1.4rem;font-weight:800;letter-spacing:-0.02em;margin-bottom:12px;">Crece sin riesgo financiero</h3>
+        <p style="font-size:14px;color:rgba(255,255,255,0.5);line-height:1.7;margin-bottom:24px;">
+          Accede a expertos que optimizan tus procesos específicos. Sin riesgos iniciales — solo pagas cuando los resultados se materializan según lo acordado.
+        </p>
+
+        <div class="flex flex-col gap-3 mb-8">
+          <div class="check-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            Diagnóstico personalizado
+          </div>
+          <div class="check-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            Implementación supervisada
+          </div>
+          <div class="check-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            Pago basado en resultados
+          </div>
+          <div class="check-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            Contratos legalmente vinculantes
+          </div>
+        </div>
+
+        <a href="#"
+           class="inline-flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-bold transition-all duration-200 hover:scale-105"
+           style="background:linear-gradient(135deg,#7c3aed,#a855f7);color:white;box-shadow:0 4px 20px rgba(124,58,237,0.3);">
+          Registrar mi empresa
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+
+      <!-- Para Asesores -->
+      <div class="glass rounded-3xl p-8 relative overflow-hidden group transition-all duration-300" style="border-color:rgba(255,255,255,0.08);">
+        <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" style="background:radial-gradient(circle at 70% 30%, rgba(168,85,247,0.08) 0%, transparent 60%);"></div>
+
+        <!-- Icon -->
+        <div class="w-12 h-12 rounded-2xl flex items-center justify-center mb-6" style="background:rgba(139,92,246,0.15);border:1px solid rgba(139,92,246,0.25);">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
+            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+          </svg>
+        </div>
+
+        <div class="pill mb-4" style="font-size:11px;">Para Asesores</div>
+        <h3 style="font-size:1.4rem;font-weight:800;letter-spacing:-0.02em;margin-bottom:12px;">Proyectos de alto impacto</h3>
+        <p style="font-size:14px;color:rgba(255,255,255,0.5);line-height:1.7;margin-bottom:24px;">
+          Trabaja en proyectos donde tu expertise se paga por resultados. El fondo de garantía te protege ante cualquier desacuerdo con el cliente.
+        </p>
+
+        <div class="flex flex-col gap-3 mb-8">
+          <div class="check-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            Contratos claros y retainers definidos
+          </div>
+          <div class="check-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            Compensación por performance
+          </div>
+          <div class="check-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            Protección con fondo de garantía
+          </div>
+          <div class="check-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            Verificación de empresas
+          </div>
+        </div>
+
+        <a href="#"
+           class="inline-flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-bold transition-all duration-200 hover:scale-105"
+           style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.85);">
+          Unirme como asesor
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── CÓMO FUNCIONA ──────────────────────────────────────── -->
+<section id="como-funciona" class="relative py-24 px-5 overflow-hidden">
+  <div class="glow-blob w-96 h-96 top-1/2 -right-48 opacity-10" style="background:#7c3aed;"></div>
+
+  <div class="relative z-10 max-w-5xl mx-auto">
+
+    <div class="text-center mb-16">
+      <p class="pill inline-flex mb-4">Proceso simple</p>
+      <h2 style="font-size:clamp(1.8rem,4vw,2.6rem);font-weight:800;letter-spacing:-0.025em;line-height:1.15;">
+        Cómo Funciona
+      </h2>
+      <p style="font-size:15px;color:rgba(255,255,255,0.45);margin-top:12px;max-width:480px;margin-left:auto;margin-right:auto;">
+        De la necesidad al resultado en 4 pasos claros y sin fricciones
+      </p>
+    </div>
+
+    <!-- Steps grid -->
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+
+      <!-- Step 1 -->
+      <div class="glass rounded-2xl p-6 relative group hover:border-violet-500/30 transition-all duration-300" style="border-color:rgba(255,255,255,0.07);">
+        <div class="w-10 h-10 rounded-2xl flex items-center justify-center mb-5 text-sm font-black" style="background:linear-gradient(135deg,rgba(124,58,237,0.3),rgba(168,85,247,0.2));border:1px solid rgba(139,92,246,0.3);color:#a78bfa;font-size:18px;">
+          1
+        </div>
+        <!-- Connector line (hidden on mobile/2col) -->
+        <div class="hidden lg:block absolute top-10 left-full w-5 z-10" style="height:1px;background:linear-gradient(90deg,rgba(139,92,246,0.4),transparent);"></div>
+        <h4 style="font-size:15px;font-weight:700;margin-bottom:8px;letter-spacing:-0.01em;">Identifica tus Necesidades</h4>
+        <p style="font-size:13px;color:rgba(255,255,255,0.45);line-height:1.6;">Define los procesos que necesitas optimizar y tus objetivos de crecimiento.</p>
+      </div>
+
+      <!-- Step 2 -->
+      <div class="glass rounded-2xl p-6 relative group hover:border-violet-500/30 transition-all duration-300" style="border-color:rgba(255,255,255,0.07);">
+        <div class="w-10 h-10 rounded-2xl flex items-center justify-center mb-5 text-sm font-black" style="background:linear-gradient(135deg,rgba(124,58,237,0.3),rgba(168,85,247,0.2));border:1px solid rgba(139,92,246,0.3);color:#a78bfa;font-size:18px;">
+          2
+        </div>
+        <div class="hidden lg:block absolute top-10 left-full w-5 z-10" style="height:1px;background:linear-gradient(90deg,rgba(139,92,246,0.4),transparent);"></div>
+        <h4 style="font-size:15px;font-weight:700;margin-bottom:8px;letter-spacing:-0.01em;">Conecta con Expertos</h4>
+        <p style="font-size:13px;color:rgba(255,255,255,0.45);line-height:1.6;">Recibe recomendaciones de asesores especializados en tu industria y necesidades específicas.</p>
+      </div>
+
+      <!-- Step 3 -->
+      <div class="glass rounded-2xl p-6 relative group hover:border-violet-500/30 transition-all duration-300" style="border-color:rgba(255,255,255,0.07);">
+        <div class="w-10 h-10 rounded-2xl flex items-center justify-center mb-5 text-sm font-black" style="background:linear-gradient(135deg,rgba(124,58,237,0.3),rgba(168,85,247,0.2));border:1px solid rgba(139,92,246,0.3);color:#a78bfa;font-size:18px;">
+          3
+        </div>
+        <div class="hidden lg:block absolute top-10 left-full w-5 z-10" style="height:1px;background:linear-gradient(90deg,rgba(139,92,246,0.4),transparent);"></div>
+        <h4 style="font-size:15px;font-weight:700;margin-bottom:8px;letter-spacing:-0.01em;">Acuerdo y Retainer</h4>
+        <p style="font-size:13px;color:rgba(255,255,255,0.45);line-height:1.6;">Establece contratos claros con retainers y metas de rendimiento específicas.</p>
+      </div>
+
+      <!-- Step 4 -->
+      <div class="glass rounded-2xl p-6 relative group hover:border-violet-500/30 transition-all duration-300" style="border-color:rgba(255,255,255,0.07);">
+        <div class="w-10 h-10 rounded-2xl flex items-center justify-center mb-5 text-sm font-black" style="background:linear-gradient(135deg,rgba(124,58,237,0.8),rgba(168,85,247,0.6));border:1px solid rgba(139,92,246,0.5);color:white;font-size:18px;box-shadow:0 4px 20px rgba(124,58,237,0.4);">
+          4
+        </div>
+        <h4 style="font-size:15px;font-weight:700;margin-bottom:8px;letter-spacing:-0.01em;">Resultados y Pago</h4>
+        <p style="font-size:13px;color:rgba(255,255,255,0.45);line-height:1.6;">El asesor recibe compensación solo cuando se alcanzan los resultados acordados.</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ── PROYECTOS CON RESULTADOS MEDIBLES ───────────────────── -->
+<section class="relative py-20 px-5 overflow-hidden">
+  <div class="relative z-10 max-w-5xl mx-auto">
+
+    <div class="mb-10">
+      <p class="pill inline-flex mb-4">Modelo comprobado</p>
+      <h2 style="font-size:clamp(1.6rem,3.5vw,2.2rem);font-weight:800;letter-spacing:-0.025em;">
+        Proyectos con Resultados Medibles
+      </h2>
+    </div>
+
+    <div class="grid sm:grid-cols-3 gap-4">
+
+      <!-- 4-8 meses -->
+      <div class="glass rounded-2xl p-7 relative overflow-hidden group hover:border-violet-500/30 transition-all duration-300" style="border-color:rgba(255,255,255,0.07);">
+        <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" style="background:radial-gradient(circle at 30% 30%, rgba(124,58,237,0.07) 0%, transparent 60%);"></div>
+        <p style="font-size:2rem;font-weight:900;letter-spacing:-0.03em;line-height:1;background:linear-gradient(135deg,#a78bfa,#7c3aed);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:14px;">4–8 meses</p>
+        <p style="font-size:13px;color:rgba(255,255,255,0.5);line-height:1.65;">Duración típica de proyectos. Suficiente para implementar, medir y optimizar procesos empresariales.</p>
+      </div>
+
+      <!-- Retainer + Bono -->
+      <div class="glass rounded-2xl p-7 relative overflow-hidden group hover:border-violet-500/30 transition-all duration-300" style="border-color:rgba(255,255,255,0.07);">
+        <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" style="background:radial-gradient(circle at 50% 30%, rgba(124,58,237,0.07) 0%, transparent 60%);"></div>
+        <p style="font-size:1.6rem;font-weight:900;letter-spacing:-0.03em;line-height:1;background:linear-gradient(135deg,#a78bfa,#7c3aed);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:14px;">Retainer + Bono</p>
+        <p style="font-size:13px;color:rgba(255,255,255,0.5);line-height:1.65;">Pago mensual fijo + bonificación del 10–20% sobre resultados generados y verificados.</p>
+      </div>
+
+      <!-- KPIs Definidos -->
+      <div class="glass rounded-2xl p-7 relative overflow-hidden group hover:border-violet-500/30 transition-all duration-300" style="border-color:rgba(255,255,255,0.07);">
+        <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" style="background:radial-gradient(circle at 70% 30%, rgba(124,58,237,0.07) 0%, transparent 60%);"></div>
+        <p style="font-size:1.6rem;font-weight:900;letter-spacing:-0.03em;line-height:1;background:linear-gradient(135deg,#a78bfa,#7c3aed);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:14px;">KPIs Definidos</p>
+        <p style="font-size:13px;color:rgba(255,255,255,0.5);line-height:1.65;">Métricas objetivas acordadas antes de iniciar: ventas, costos, eficiencia operativa.</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ── FONDO DE GARANTÍA ───────────────────────────────────── -->
+<section class="relative py-16 px-5 overflow-hidden">
+  <div class="glow-blob w-80 h-80 bottom-0 left-1/2 -translate-x-1/2 opacity-10" style="background:#7c3aed;"></div>
+
+  <div class="relative z-10 max-w-5xl mx-auto">
+    <div class="rounded-3xl overflow-hidden" style="border:1px solid rgba(139,92,246,0.2);">
+
+      <!-- Header -->
+      <div class="px-8 pt-8 pb-6" style="background:rgba(124,58,237,0.08);border-bottom:1px solid rgba(139,92,246,0.15);">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style="background:rgba(139,92,246,0.2);border:1px solid rgba(139,92,246,0.3);">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <h2 style="font-size:1.25rem;font-weight:800;letter-spacing:-0.02em;">Fondo de Garantía: Protección Bilateral</h2>
+        </div>
+        <p style="font-size:14px;color:rgba(255,255,255,0.55);line-height:1.7;max-width:760px;">
+          El fondo de garantía es el mecanismo que diferencia PymeBoost de plataformas freelance.
+          <strong style="color:rgba(255,255,255,0.8);font-weight:600;">Retiene 10% de cada pago mensual en cuenta neutral</strong>
+          hasta finalización o resolución de disputas.
+        </p>
+      </div>
+
+      <!-- Two-column protection -->
+      <div class="grid md:grid-cols-2 divide-y md:divide-y-0 md:divide-x" style="divide-color:rgba(255,255,255,0.06);background:rgba(255,255,255,0.02);">
+
+        <!-- Para PYMEs -->
+        <div class="p-8">
+          <p style="font-size:13px;font-weight:700;color:white;margin-bottom:16px;letter-spacing:0.01em;">Protección para PYMEs</p>
+          <div class="flex flex-col gap-3">
+            <div class="check-item">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              Si el asesor no entrega según contrato, el fondo cubre contratación de sustituto
+            </div>
+            <div class="check-item">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              Compensación por trabajo no entregado o resultados no alcanzados por culpa del asesor
+            </div>
+            <div class="check-item">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              Cobertura de costos de mediación legal si hay disputa
+            </div>
+          </div>
+        </div>
+
+        <!-- Para Asesores -->
+        <div class="p-8">
+          <p style="font-size:13px;font-weight:700;color:white;margin-bottom:16px;letter-spacing:0.01em;">Protección para Asesores</p>
+          <div class="flex flex-col gap-3">
+            <div class="check-item">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              Si la PYME cancela arbitrariamente, el fondo asegura pago por trabajo entregado verificable
+            </div>
+            <div class="check-item">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              Compensación por terminación sin causa después de fase inicial
+            </div>
+            <div class="check-item">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              Si cumpliste tu parte pero la PYME no implementó, no pierdes tu compensación legítima
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mediación neutral -->
+      <div class="px-8 py-5" style="background:rgba(139,92,246,0.07);border-top:1px solid rgba(139,92,246,0.15);">
+        <p style="font-size:13px;color:rgba(255,255,255,0.6);line-height:1.7;">
+          <strong style="color:rgba(255,255,255,0.85);font-weight:700;">Mediación Neutral:</strong>
+          Un mediador certificado revisa entregables, evidencia y términos contractuales. Decisión vinculante sobre distribución de fondos.
+          Escalación a arbitraje solo si mediación falla.
+          <strong style="color:#a78bfa;font-weight:600;">El 95% de disputas se resuelven en mediación.</strong>
+        </p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ── CTA FINAL ───────────────────────────────────────────── -->
+<section class="relative py-24 px-5 overflow-hidden">
+  <div class="glow-blob w-96 h-96 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-10" style="background:#7c3aed;"></div>
+  <div class="relative z-10 max-w-2xl mx-auto text-center">
+    <p class="pill inline-flex mb-6">Únete hoy</p>
+    <h2 style="font-size:clamp(1.8rem,4vw,2.6rem);font-weight:900;letter-spacing:-0.03em;line-height:1.15;margin-bottom:16px;">
+      Comienza tu <span class="grad-text">Transformación Empresarial</span>
+    </h2>
+    <p style="font-size:15px;color:rgba(255,255,255,0.5);max-width:480px;margin:0 auto 40px;line-height:1.7;">
+      Únete a cientos de PYMEs que están optimizando sus procesos con expertos especializados. Proceso de registro profesional y verificado.
+    </p>
+    <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
+      <a href="Registro PYME.html"
+         class="inline-flex items-center gap-2.5 px-7 py-3.5 rounded-2xl text-sm font-semibold transition-all duration-200 hover:scale-105"
+         style="background:rgba(255,255,255,0.05);border:1px solid rgba(139,92,246,0.4);color:rgba(255,255,255,0.85);">
+        Registrar mi PYME
+      </a>
+      <a href="Registro Asesor.html"
+         class="btn-primary inline-flex items-center gap-2.5 px-7 py-3.5 rounded-2xl text-sm font-bold transition-all duration-200 hover:scale-105"
+         style="background:linear-gradient(135deg,#7c3aed,#a855f7);color:white;box-shadow:0 8px 32px rgba(124,58,237,0.4);">
+        Aplicar como Asesor
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ── FOOTER ─────────────────────────────────────────────── -->
+<footer class="border-t py-8 px-5" style="border-color:rgba(255,255,255,0.06);">
+  <div class="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+
+    <p style="font-size:13px;color:rgba(255,255,255,0.25);">© 2026 PymeBoost. Todos los derechos reservados.</p>
+
+    <div class="flex items-center gap-1" style="font-size:13px;color:rgba(139,92,246,0.7);">
+      <a href="#" class="hover:text-white transition-colors px-2 py-1" style="color:rgba(139,92,246,0.8);">Preguntas Frecuentes</a>
+      <span style="color:rgba(255,255,255,0.15);">·</span>
+      <a href="#" class="hover:text-white transition-colors px-2 py-1" style="color:rgba(139,92,246,0.8);">Términos y Condiciones</a>
+    </div>
+
+  </div>
+</footer>
+
+<script>
+  // Navbar glass on scroll
+  var navbar = document.getElementById('navbar');
+  window.addEventListener('scroll', function() {
+    if (window.scrollY > 20) {
+      navbar.style.background = 'rgba(9,9,11,0.85)';
+      navbar.style.backdropFilter = 'blur(16px)';
+      navbar.style.borderBottom = '1px solid rgba(255,255,255,0.06)';
+    } else {
+      navbar.style.background = 'transparent';
+      navbar.style.backdropFilter = 'none';
+      navbar.style.borderBottom = 'none';
+    }
+  });
+
+  // Close mobile menu on link click
+  document.querySelectorAll('#mobile-menu a').forEach(function(a) {
+    a.addEventListener('click', function() {
+      document.getElementById('mobile-menu').classList.remove('open');
+    });
+  });
+
+  // Intersection observer for fade-in on scroll
+  var observer = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting) {
+        entry.target.style.animationPlayState = 'running';
+        entry.target.style.opacity = '1';
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.15 });
+
+  document.querySelectorAll('.glass').forEach(function(el) {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(20px)';
+    el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+    observer.observe(el);
+  });
+
+  // Re-trigger glass cards when visible
+  var cardObserver = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting) {
+        entry.target.style.opacity = '1';
+        entry.target.style.transform = 'translateY(0)';
+        cardObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.glass').forEach(function(el) {
+    cardObserver.observe(el);
+  });
+</script>
+</body>
+</html>
