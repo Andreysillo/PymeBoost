@@ -1,7 +1,5 @@
 # PymeBoost
 
-Problem Statement: Proporcionar una conexión orientada a resultados entre las pymes y asesores de alto rendimiento.
-
 PymeBoost es una plataforma que conecta PYMES con expertos y asesores especializados en procesos específicos, ayudándolas a crecer de manera más estructurada y sostenible. Actualmente, iniciar y desarrollar una PYME sin experiencia previa puede ser un proceso abrumador y agotador, especialmente al momento de identificar qué áreas necesitan optimización y cómo implementar mejoras efectivas.
 
 PymeBoost ofrece una solución a estas empresas mediante un servicio de conexión con asesores y expertos capaces de fortalecer los procesos que cada pyme necesita mejorar. A partir del contexto de la empresa y de los objetivos que desea alcanzar, nuestra plataforma recomienda asesores especializados y listos para trabajar directamente en la implementación de mejoras estratégicas.
