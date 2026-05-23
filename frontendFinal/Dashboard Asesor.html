@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Asesor — PymeBoost</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config={theme:{extend:{fontFamily:{sans:['Outfit','sans-serif']}}}}</script>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box}
+    body{margin:0;background:#09090b;color:#fafafa;font-family:'Outfit',sans-serif;display:flex;height:100vh;overflow:hidden}
+    .sidebar{width:220px;min-width:220px;background:#0d0d10;border-right:1px solid rgba(255,255,255,0.06);display:flex;flex-direction:column;height:100vh;position:sticky;top:0}
+    .nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;font-size:13px;font-weight:500;color:rgba(255,255,255,0.5);text-decoration:none;transition:all .15s;border:1px solid transparent}
+    .nav-item:hover{background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.85)}
+    .nav-item.active{background:rgba(124,58,237,0.15);color:#a78bfa;border-color:rgba(139,92,246,0.2)}
+    .glass{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:16px}
+    .stat-card{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:20px}
+    .pill{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:100px;font-size:11px;font-weight:600}
+    .match-high{background:rgba(16,185,129,0.12);color:#10b981;border:1px solid rgba(16,185,129,0.25)}
+    .match-mid{background:rgba(139,92,246,0.12);color:#a78bfa;border:1px solid rgba(139,92,246,0.25)}
+    .match-low{background:rgba(245,158,11,0.12);color:#f59e0b;border:1px solid rgba(245,158,11,0.25)}
+    .progress-bar{height:5px;background:rgba(255,255,255,0.08);border-radius:10px;overflow:hidden}
+    .progress-fill{height:100%;border-radius:10px;background:linear-gradient(90deg,#7c3aed,#a855f7)}
+    .btn-primary{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:8px 16px;border-radius:11px;background:linear-gradient(135deg,#7c3aed,#a855f7);color:white;font-size:12px;font-weight:700;border:none;cursor:pointer;text-decoration:none;transition:transform .15s;box-shadow:0 3px 12px rgba(124,58,237,0.3)}
+    .btn-primary:hover{transform:scale(1.03)}
+    .btn-secondary{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:8px 16px;border-radius:11px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.75);font-size:12px;font-weight:600;cursor:pointer;text-decoration:none;transition:all .15s}
+    .btn-secondary:hover{background:rgba(255,255,255,0.09)}
+    .icon-btn{width:28px;height:28px;border-radius:8px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;color:rgba(255,255,255,0.4);transition:all .15s;flex-shrink:0}
+    .icon-btn:hover{background:rgba(139,92,246,0.15);border-color:rgba(139,92,246,0.3);color:#a78bfa}
+    .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.65);backdrop-filter:blur(10px);z-index:50;display:flex;align-items:center;justify-content:center;padding:16px}
+    .modal-box{background:#13131a;border:1px solid rgba(255,255,255,0.1);border-radius:20px;width:100%;max-height:90vh;overflow-y:auto}
+    .inp{width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:10px 14px;font-size:13px;font-family:'Outfit',sans-serif;color:white;outline:none;transition:border-color .2s;resize:vertical;min-height:90px;line-height:1.55}
+    .inp::placeholder{color:rgba(255,255,255,0.25)}.inp:focus{border-color:rgba(139,92,246,0.6)}
+    .contract-section{padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.06)}
+    .contract-section:last-child{border-bottom:none}
+    ::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:rgba(139,92,246,0.3);border-radius:10px}
+    .opp-card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:18px;transition:all .2s;position:relative;overflow:hidden}
+    .opp-card:hover{border-color:rgba(139,92,246,0.25);background:rgba(124,58,237,0.04)}
+    .opp-card .top-bar{position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#7c3aed,#a855f7);border-radius:14px 14px 0 0}
+  </style>
+</head>
+<body>
+
+<!-- ── SIDEBAR ─────────────────────────── -->
+<aside class="sidebar">
+  <div style="padding:18px 14px;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;gap:10px;">
+    <div style="width:28px;height:28px;border-radius:9px;background:linear-gradient(135deg,#7c3aed,#a855f7);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+    </div>
+    <div>
+      <div style="font-weight:700;font-size:14px;">PymeBoost</div>
+      <div style="font-size:10px;color:rgba(255,255,255,0.35);">Panel Asesor</div>
+    </div>
+  </div>
+  <nav style="flex:1;padding:10px 8px;display:flex;flex-direction:column;gap:2px;">
+    <a href="Dashboard Asesor.html" class="nav-item active">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+      Inicio
+    </a>
+    <a href="#" onclick="scrollToSection('opp-section');return false;" class="nav-item" style="position:relative;">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      Oportunidades
+      <span style="margin-left:auto;background:#7c3aed;color:white;font-size:10px;font-weight:700;padding:1px 7px;border-radius:100px;">5</span>
+    </a>
+    <a href="Contratos.html" class="nav-item">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      Mis Contratos
+    </a>
+    <a href="Mensajes.html" class="nav-item">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      Mensajes
+    </a>
+    <div style="flex:1;"></div>
+    <a href="#" class="nav-item">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      Mi Perfil
+    </a>
+  </nav>
+  <div style="padding:12px;border-top:1px solid rgba(255,255,255,0.06);">
+    <div style="display:flex;align-items:center;gap:10px;padding:10px;border-radius:12px;cursor:pointer;" onmouseover="this.style.background='rgba(255,255,255,0.04)'" onmouseout="this.style.background=''">
+      <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#a855f7);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">MG</div>
+      <div style="min-width:0;">
+        <div style="font-size:12px;font-weight:600;color:rgba(255,255,255,0.85);">María González</div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.35);">Marketing Digital</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- ── MAIN ───────────────────────────── -->
+<div style="flex:1;display:flex;flex-direction:column;overflow:hidden;">
+
+  <!-- Header -->
+  <header style="height:56px;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:space-between;padding:0 24px;flex-shrink:0;background:#09090b;">
+    <div>
+      <h1 style="font-size:15px;font-weight:700;margin:0;">Inicio</h1>
+      <p style="font-size:11px;color:rgba(255,255,255,0.35);margin:1px 0 0;">Bienvenida de vuelta, María González</p>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <button onclick="openModal('modal-match')" class="btn-secondary" style="font-size:11px;padding:7px 13px;gap:6px;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        ¿Cómo funciona el matching?
+      </button>
+    </div>
+  </header>
+
+  <!-- Content -->
+  <main style="flex:1;overflow-y:auto;padding:22px 24px;display:flex;flex-direction:column;gap:20px;" id="main-content">
+
+    <!-- ── STATS ── -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;">
+
+      <div class="stat-card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+          <span style="font-size:11px;color:rgba(255,255,255,0.4);font-weight:500;">Proyectos Activos</span>
+          <div style="width:32px;height:32px;border-radius:9px;background:rgba(59,130,246,0.12);display:flex;align-items:center;justify-content:center;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          </div>
+        </div>
+        <div style="font-size:28px;font-weight:800;letter-spacing:-0.03em;line-height:1;">2</div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.3);margin-top:6px;">contratos en ejecución</div>
+      </div>
+
+      <div class="stat-card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+          <span style="font-size:11px;color:rgba(255,255,255,0.4);font-weight:500;">Ingreso Mensual Est.</span>
+          <div style="width:32px;height:32px;border-radius:9px;background:rgba(16,185,129,0.12);display:flex;align-items:center;justify-content:center;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          </div>
+        </div>
+        <div style="font-size:28px;font-weight:800;letter-spacing:-0.03em;line-height:1;">$86k</div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.3);margin-top:6px;">MXN neto estimado</div>
+      </div>
+
+      <div class="stat-card" style="cursor:pointer;" onclick="scrollToSection('opp-section')" onmouseover="this.style.borderColor='rgba(139,92,246,0.3)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.08)'">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+          <span style="font-size:11px;color:rgba(255,255,255,0.4);font-weight:500;">Oportunidades</span>
+          <div style="width:32px;height:32px;border-radius:9px;background:rgba(139,92,246,0.12);display:flex;align-items:center;justify-content:center;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          </div>
+        </div>
+        <div style="font-size:28px;font-weight:800;letter-spacing:-0.03em;line-height:1;">5</div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.3);margin-top:6px;">PYMEs con match &gt; 60%</div>
+      </div>
+
+      <div class="stat-card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+          <span style="font-size:11px;color:rgba(255,255,255,0.4);font-weight:500;">Proyectos Completados</span>
+          <div style="width:32px;height:32px;border-radius:9px;background:rgba(245,158,11,0.12);display:flex;align-items:center;justify-content:center;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+          </div>
+        </div>
+        <div style="font-size:28px;font-weight:800;letter-spacing:-0.03em;line-height:1;">18</div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.3);margin-top:6px;">histórico total</div>
+      </div>
+    </div>
+
+    <!-- ── OPORTUNIDADES DESTACADAS ── -->
+    <div class="glass" style="padding:20px;" id="opp-section">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+        <h2 style="font-size:14px;font-weight:700;margin:0;">Oportunidades Destacadas</h2>
+        <button onclick="openModal('modal-match')" class="icon-btn" title="¿Cómo se calcula el match?">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        </button>
+      </div>
+      <p style="font-size:11px;color:rgba(255,255,255,0.35);margin-bottom:16px;">Top 3 PYMEs por % de match con tu perfil · Marketing Digital · Retail · CDMX</p>
+
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
+
+        <!-- OPP 1 — 92% -->
+        <div class="opp-card">
+          <div class="top-bar"></div>
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;">
+            <div style="display:flex;align-items:center;gap:9px;">
+              <div style="width:36px;height:36px;border-radius:10px;background:rgba(124,58,237,0.2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#a78bfa;flex-shrink:0;">RF</div>
+              <div>
+                <div style="font-size:13px;font-weight:700;line-height:1.2;">Retail Fashion MX</div>
+                <div style="font-size:11px;color:rgba(255,255,255,0.4);">Retail / Comercio</div>
+              </div>
+            </div>
+            <button onclick="openModal('modal-match')" class="icon-btn" title="Ver desglose de match">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            </button>
+          </div>
+
+          <div style="margin-bottom:12px;">
+            <span class="pill match-high" style="font-size:11px;margin-bottom:8px;display:inline-flex;">92% match</span>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px;">
+              <div style="background:rgba(255,255,255,0.03);border-radius:8px;padding:7px 9px;">
+                <div style="font-size:10px;color:rgba(255,255,255,0.35);margin-bottom:2px;">Área</div>
+                <div style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.8);">Marketing Digital</div>
+              </div>
+              <div style="background:rgba(255,255,255,0.03);border-radius:8px;padding:7px 9px;">
+                <div style="font-size:10px;color:rgba(255,255,255,0.35);margin-bottom:2px;">Timeline</div>
+                <div style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.8);">6 meses</div>
+              </div>
+              <div style="background:rgba(255,255,255,0.03);border-radius:8px;padding:7px 9px;">
+                <div style="font-size:10px;color:rgba(255,255,255,0.35);margin-bottom:2px;">Tamaño</div>
+                <div style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.8);">45 empleados</div>
+              </div>
+              <div style="background:rgba(255,255,255,0.03);border-radius:8px;padding:7px 9px;">
+                <div style="font-size:10px;color:rgba(255,255,255,0.35);margin-bottom:2px;">Ubicación</div>
+                <div style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.8);">CDMX</div>
+              </div>
+            </div>
+          </div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.35);margin-bottom:12px;">$38–42k/mes + 15% bono</div>
+          <div style="display:flex;gap:6px;">
+            <button onclick="openDetail('rf')" class="btn-secondary" style="flex:1;font-size:11px;padding:7px 10px;">Ver Detalles</button>
+            <button onclick="openApply('rf')" class="btn-primary" style="flex:1;font-size:11px;padding:7px 10px;">Aplicar →</button>
+          </div>
+        </div>
+
+        <!-- OPP 2 — 75% -->
+        <div class="opp-card">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;">
+            <div style="display:flex;align-items:center;gap:9px;">
+              <div style="width:36px;height:36px;border-radius:10px;background:rgba(245,158,11,0.18);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fbbf24;flex-shrink:0;">CJ</div>
+              <div>
+                <div style="font-size:13px;font-weight:700;line-height:1.2;">Constructora JML</div>
+                <div style="font-size:11px;color:rgba(255,255,255,0.4);">Construcción</div>
+              </div>
+            </div>
+            <button onclick="openModal('modal-match')" class="icon-btn" title="Ver desglose de match">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            </button>
+          </div>
+          <div style="margin-bottom:12px;">
+            <span class="pill match-mid" style="font-size:11px;margin-bottom:8px;display:inline-flex;">75% match</span>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px;">
+              <div style="background:rgba(255,255,255,0.03);border-radius:8px;padding:7px 9px;"><div style="font-size:10px;color:rgba(255,255,255,0.35);margin-bottom:2px;">Área</div><div style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.8);">Estrategia</div></div>
+              <div style="background:rgba(255,255,255,0.03);border-radius:8px;padding:7px 9px;"><div style="font-size:10px;color:rgba(255,255,255,0.35);margin-bottom:2px;">Timeline</div><div style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.8);">9 meses</div></div>
+              <div style="background:rgba(255,255,255,0.03);border-radius:8px;padding:7px 9px;"><div style="font-size:10px;color:rgba(255,255,255,0.35);margin-bottom:2px;">Tamaño</div><div style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.8);">80 emp.</div></div>
+              <div style="background:rgba(255,255,255,0.03);border-radius:8px;padding:7px 9px;"><div style="font-size:10px;color:rgba(255,255,255,0.35);margin-bottom:2px;">Ubicación</div><div style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.8);">CDMX</div></div>
+            </div>
+          </div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.35);margin-bottom:12px;">$45–55k/mes + 18% bono</div>
+          <div style="display:flex;gap:6px;">
+            <button onclick="openDetail('cj')" class="btn-secondary" style="flex:1;font-size:11px;padding:7px 10px;">Ver Detalles</button>
+            <button onclick="openApply('cj')" class="btn-primary" style="flex:1;font-size:11px;padding:7px 10px;">Aplicar →</button>
+          </div>
+        </div>
+
+        <!-- OPP 3 — 68% -->
+        <div class="opp-card">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;">
+            <div style="display:flex;align-items:center;gap:9px;">
+              <div style="width:36px;height:36px;border-radius:10px;background:rgba(16,185,129,0.15);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#34d399;flex-shrink:0;">TS</div>
+              <div>
+                <div style="font-size:13px;font-weight:700;line-height:1.2;">Tech Solutions SA</div>
+                <div style="font-size:11px;color:rgba(255,255,255,0.4);">Tecnología</div>
+              </div>
+            </div>
+            <button onclick="openModal('modal-match')" class="icon-btn" title="Ver desglose de match">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            </button>
+          </div>
+          <div style="margin-bottom:12px;">
+            <span class="pill match-low" style="font-size:11px;margin-bottom:8px;display:inline-flex;">68% match</span>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px;">
+              <div style="background:rgba(255,255,255,0.03);border-radius:8px;padding:7px 9px;"><div style="font-size:10px;color:rgba(255,255,255,0.35);margin-bottom:2px;">Área</div><div style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.8);">Transform. Digital</div></div>
+              <div style="background:rgba(255,255,255,0.03);border-radius:8px;padding:7px 9px;"><div style="font-size:10px;color:rgba(255,255,255,0.35);margin-bottom:2px;">Timeline</div><div style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.8);">6 meses</div></div>
+              <div style="background:rgba(255,255,255,0.03);border-radius:8px;padding:7px 9px;"><div style="font-size:10px;color:rgba(255,255,255,0.35);margin-bottom:2px;">Tamaño</div><div style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.8);">30 emp.</div></div>
+              <div style="background:rgba(255,255,255,0.03);border-radius:8px;padding:7px 9px;"><div style="font-size:10px;color:rgba(255,255,255,0.35);margin-bottom:2px;">Ubicación</div><div style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.8);">MTY</div></div>
+            </div>
+          </div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.35);margin-bottom:12px;">$40k/mes + 15% bono</div>
+          <div style="display:flex;gap:6px;">
+            <button onclick="openDetail('ts')" class="btn-secondary" style="flex:1;font-size:11px;padding:7px 10px;">Ver Detalles</button>
+            <button onclick="openApply('ts')" class="btn-primary" style="flex:1;font-size:11px;padding:7px 10px;">Aplicar →</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── PROYECTOS EN CURSO ── -->
+    <div class="glass" style="padding:20px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <h2 style="font-size:14px;font-weight:700;margin:0;">Proyectos en Curso</h2>
+        <a href="Contratos.html" style="font-size:12px;color:#a78bfa;text-decoration:none;font-weight:500;">Ver todos →</a>
+      </div>
+
+      <!-- Project 1 -->
+      <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:16px;margin-bottom:10px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="width:38px;height:38px;border-radius:10px;background:rgba(124,58,237,0.2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#a78bfa;flex-shrink:0;">DN</div>
+            <div>
+              <div style="font-size:13px;font-weight:700;">Distribuidora Norte</div>
+              <div style="font-size:11px;color:rgba(255,255,255,0.4);">Eficiencia Operacional · 8 meses</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span class="pill" style="background:rgba(59,130,246,0.15);color:#60a5fa;border:1px solid rgba(59,130,246,0.25);font-size:10px;">Activo</span>
+            <a href="Contratos.html" class="btn-secondary" style="font-size:11px;padding:5px 12px;">Ver Detalles</a>
+          </div>
+        </div>
+        <div style="margin-bottom:8px;">
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:5px;">
+            <span>Progreso temporal</span><span style="color:rgba(255,255,255,0.6);">62% — Mes 5 de 8</span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" style="width:62%;"></div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px;">
+          <div style="background:rgba(255,255,255,0.02);border-radius:8px;padding:8px 10px;">
+            <div style="font-size:10px;color:rgba(255,255,255,0.3);margin-bottom:3px;">Retainer</div>
+            <div style="font-size:12px;font-weight:700;color:#a78bfa;">$48,000/mes</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.02);border-radius:8px;padding:8px 10px;">
+            <div style="font-size:10px;color:rgba(255,255,255,0.3);margin-bottom:3px;">Próximo hito</div>
+            <div style="font-size:12px;font-weight:600;color:rgba(255,255,255,0.8);">Capacitación equipo</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.02);border-radius:8px;padding:8px 10px;">
+            <div style="font-size:10px;color:rgba(255,255,255,0.3);margin-bottom:3px;">Fecha límite</div>
+            <div style="font-size:12px;font-weight:600;color:rgba(255,255,255,0.8);">3 Jun 2026</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Project 2 -->
+      <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:16px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="width:38px;height:38px;border-radius:10px;background:rgba(16,185,129,0.15);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#34d399;flex-shrink:0;">IZ</div>
+            <div>
+              <div style="font-size:13px;font-weight:700;">Inmobiliaria Zenith</div>
+              <div style="font-size:11px;color:rgba(255,255,255,0.4);">Gestión Financiera · 5 meses</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span class="pill" style="background:rgba(59,130,246,0.15);color:#60a5fa;border:1px solid rgba(59,130,246,0.25);font-size:10px;">Activo</span>
+            <a href="Contratos.html" class="btn-secondary" style="font-size:11px;padding:5px 12px;">Ver Detalles</a>
+          </div>
+        </div>
+        <div style="margin-bottom:8px;">
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:5px;">
+            <span>Progreso temporal</span><span style="color:rgba(255,255,255,0.6);">60% — Mes 3 de 5</span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" style="width:60%;"></div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px;">
+          <div style="background:rgba(255,255,255,0.02);border-radius:8px;padding:8px 10px;">
+            <div style="font-size:10px;color:rgba(255,255,255,0.3);margin-bottom:3px;">Retainer</div>
+            <div style="font-size:12px;font-weight:700;color:#a78bfa;">$36,000/mes</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.02);border-radius:8px;padding:8px 10px;">
+            <div style="font-size:10px;color:rgba(255,255,255,0.3);margin-bottom:3px;">Próximo hito</div>
+            <div style="font-size:12px;font-weight:600;color:rgba(255,255,255,0.8);">Reporte financiero Q3</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.02);border-radius:8px;padding:8px 10px;">
+            <div style="font-size:10px;color:rgba(255,255,255,0.3);margin-bottom:3px;">Fecha límite</div>
+            <div style="font-size:12px;font-weight:600;color:rgba(255,255,255,0.8);">10 Jun 2026</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ── MODAL: MATCHING ──────────────────── -->
+<div id="modal-match" style="display:none;" class="modal-bg" onclick="if(event.target===this)closeModal('modal-match')">
+  <div class="modal-box" style="max-width:480px;">
+    <div style="padding:20px 20px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.07);">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="width:32px;height:32px;border-radius:9px;background:rgba(139,92,246,0.15);display:flex;align-items:center;justify-content:center;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        </div>
+        <span style="font-size:14px;font-weight:700;">Algoritmo de Match Score</span>
+      </div>
+      <button onclick="closeModal('modal-match')" style="background:none;border:none;color:rgba(255,255,255,0.4);cursor:pointer;font-size:18px;line-height:1;padding:2px 6px;">×</button>
+    </div>
+    <div style="padding:20px;">
+      <p style="font-size:13px;color:rgba(255,255,255,0.5);line-height:1.7;margin-bottom:18px;">El match score (0–100%) indica qué tan bien encaja tu perfil con cada PYME. Se calcula automáticamente con 4 factores:</p>
+
+      <!-- Score bars -->
+      <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:20px;">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div style="width:52px;height:52px;border-radius:13px;background:rgba(124,58,237,0.18);border:1px solid rgba(139,92,246,0.25);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:#a78bfa;flex-shrink:0;">40%</div>
+          <div style="flex:1;">
+            <div style="font-size:13px;font-weight:600;margin-bottom:2px;">Especialización</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.4);line-height:1.5;">Tu área de expertise vs. la necesidad exacta de la PYME. Es el factor más importante.</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div style="width:52px;height:52px;border-radius:13px;background:rgba(59,130,246,0.14);border:1px solid rgba(59,130,246,0.25);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:#60a5fa;flex-shrink:0;">30%</div>
+          <div style="flex:1;">
+            <div style="font-size:13px;font-weight:600;margin-bottom:2px;">Industria</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.4);line-height:1.5;">Tu experiencia sectorial vs. el sector de la PYME. Coincidencia exacta da 30%, relacionada da hasta 15%.</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div style="width:52px;height:52px;border-radius:13px;background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.22);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:#34d399;flex-shrink:0;">15%</div>
+          <div style="flex:1;">
+            <div style="font-size:13px;font-weight:600;margin-bottom:2px;">Ubicación</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.4);line-height:1.5;">Misma ciudad = 15%. Misma región = 8%. Diferente estado = 0%. Actualiza tu ciudad para más match.</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div style="width:52px;height:52px;border-radius:13px;background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.22);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:#fbbf24;flex-shrink:0;">15%</div>
+          <div style="flex:1;">
+            <div style="font-size:13px;font-weight:600;margin-bottom:2px;">Tamaño de empresa</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.4);line-height:1.5;">Tu historial con empresas de tamaño similar. Agrega proyectos pasados para mejorar este factor.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tips -->
+      <div style="background:rgba(139,92,246,0.08);border:1px solid rgba(139,92,246,0.2);border-radius:12px;padding:14px;margin-bottom:16px;">
+        <div style="font-size:12px;font-weight:700;color:#a78bfa;margin-bottom:8px;">💡 Consejos para mejorar tu match</div>
+        <div style="font-size:12px;color:rgba(255,255,255,0.5);line-height:1.7;display:flex;flex-direction:column;gap:4px;">
+          <div>→ Agrega todas las industrias en las que has trabajado en tu perfil</div>
+          <div>→ Documenta casos de éxito con empresas de distintos tamaños</div>
+          <div>→ Completa tu sección de metodología para mejorar coincidencias</div>
+          <div>→ Mantén tu ubicación actualizada si trabajas de forma presencial</div>
+        </div>
+      </div>
+
+      <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:12px;margin-bottom:16px;font-size:12px;color:rgba(255,255,255,0.45);line-height:1.7;">
+        <strong style="color:rgba(255,255,255,0.75);">Visibilidad:</strong> Match &gt;80% → apareces en "Recomendados" de la PYME y recibes notificación push. Match 60–80% → lista general visible. Match &lt;60% → solo búsqueda directa.
+      </div>
+
+      <button onclick="closeModal('modal-match')" class="btn-secondary" style="width:100%;justify-content:center;">Entendido</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── MODAL: VER DETALLES ─────────────── -->
+<div id="modal-detail" style="display:none;" class="modal-bg" onclick="if(event.target===this)closeModal('modal-detail')">
+  <div class="modal-box" style="max-width:500px;">
+    <div style="padding:20px 20px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.07);">
+      <span style="font-size:14px;font-weight:700;" id="detail-title">Detalles de Oportunidad</span>
+      <button onclick="closeModal('modal-detail')" style="background:none;border:none;color:rgba(255,255,255,0.4);cursor:pointer;font-size:18px;line-height:1;padding:2px 6px;">×</button>
+    </div>
+    <div style="padding:20px;" id="detail-body"></div>
+  </div>
+</div>
+
+<!-- ── MODAL: APLICAR ──────────────────── -->
+<div id="modal-apply" style="display:none;" class="modal-bg" onclick="if(event.target===this)closeModal('modal-apply')">
+  <div class="modal-box" style="max-width:540px;">
+    <div style="padding:20px 20px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.07);">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="width:30px;height:30px;border-radius:8px;background:rgba(139,92,246,0.15);display:flex;align-items:center;justify-content:center;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        </div>
+        <span style="font-size:14px;font-weight:700;" id="apply-title">Aplicar a oportunidad</span>
+      </div>
+      <button onclick="closeModal('modal-apply')" style="background:none;border:none;color:rgba(255,255,255,0.4);cursor:pointer;font-size:18px;line-height:1;padding:2px 6px;">×</button>
+    </div>
+    <div style="padding:20px;">
+
+      <!-- Auto-contract notice -->
+      <div style="background:rgba(124,58,237,0.07);border:1px solid rgba(139,92,246,0.2);border-radius:12px;padding:14px;margin-bottom:16px;">
+        <div style="font-size:11px;font-weight:700;color:#a78bfa;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;">📄 Contrato generado automáticamente</div>
+        <div style="font-size:12px;color:rgba(255,255,255,0.5);line-height:1.7;" id="apply-contract-meta"></div>
+      </div>
+
+      <!-- Contract sections preview -->
+      <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:14px;margin-bottom:14px;">
+        <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px;">Secciones del contrato</div>
+        <div id="apply-sections" style="display:flex;flex-direction:column;gap:0;"></div>
+      </div>
+
+      <!-- Non-modifiable warning -->
+      <div style="background:rgba(255,200,0,0.04);border:1px solid rgba(255,200,0,0.12);border-radius:10px;padding:10px 12px;margin-bottom:16px;font-size:11px;color:rgba(255,255,255,0.45);display:flex;align-items:flex-start;gap:8px;">
+        <span style="color:#fbbf24;flex-shrink:0;margin-top:1px;">⚠</span>
+        <span>Este contrato es generado automáticamente por PymeBoost y <strong style="color:rgba(255,255,255,0.75);">no puede ser modificado</strong> por ninguna de las partes. Garantiza protección estándar bilateral.</span>
+      </div>
+
+      <!-- Message -->
+      <div style="margin-bottom:16px;">
+        <label style="font-size:12px;font-weight:600;color:rgba(255,255,255,0.7);display:block;margin-bottom:6px;">Mensaje personalizado a la PYME</label>
+        <textarea class="inp" id="apply-msg" placeholder="Explica por qué eres la opción ideal. Menciona experiencias similares, resultados concretos que puedes lograr y tu metodología de trabajo..."></textarea>
+        <div style="font-size:10px;color:rgba(255,255,255,0.25);margin-top:4px;">Un buen mensaje aumenta significativamente las probabilidades de ser seleccionado.</div>
+      </div>
+
+      <div style="display:flex;gap:10px;">
+        <button onclick="closeModal('modal-apply')" class="btn-secondary" style="flex:1;">Cancelar</button>
+        <button onclick="submitApply()" class="btn-primary" style="flex:1;">Aplicar con este Contrato →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" style="display:none;position:fixed;bottom:24px;right:24px;background:#059669;color:white;padding:12px 20px;border-radius:13px;font-size:13px;font-weight:600;box-shadow:0 8px 28px rgba(0,0,0,0.35);z-index:200;display:flex;align-items:center;gap:9px;max-width:360px;">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+  <span id="toast-msg">¡Aplicación enviada!</span>
+</div>
+
+<script>
+// ── Data ──────────────────────────────────
+var opps = {
+  rf: {
+    name: 'Retail Fashion MX', industry: 'Retail / Comercio', area: 'Marketing Digital',
+    match: 92, matchCls: 'match-high', timeline: '6 meses', size: '45 empleados', city: 'CDMX',
+    rate: '$38,000 – $42,000 MXN/mes', bonus: '15%',
+    need: 'Incrementar ventas online en 40%, reducir CAC 25%, mejorar conversion rate de 1.2% a 2.8% en 6 meses.',
+    contractType: 'Marketing Digital',
+    sections: [
+      { title: '1. Partes', desc: 'Retail Fashion MX S.A. de C.V. (PYME) · María González (Asesora)' },
+      { title: '2. Objeto', desc: 'Consultoría en Marketing Digital: estrategia de paid ads, optimización de conversión, email marketing y analítica.' },
+      { title: '3. Duración y Fases', desc: 'Ene → Jul 2026 (6 meses) · Diagnóstico → Diseño → Implementación → Medición' },
+      { title: '4. Compensación', desc: '$38,000 MXN/mes retainer + 15% bono si ventas ≥ +40% y CAC ≤ -20%' },
+      { title: '5. Fondo de Garantía', desc: '10% de retención mensual ($3,800) en cuenta neutral PymeBoost. Liberación al finalizar (98%).' },
+      { title: '6. Comisiones', desc: 'PymeBoost: 15% sobre retainers + 10% sobre bonificaciones' },
+      { title: '7. Terminación y Disputas', desc: 'Mediación neutral certificada. Prohibición de elusión 12 meses post-contrato.' },
+    ]
+  },
+  cj: {
+    name: 'Constructora JML', industry: 'Construcción', area: 'Estrategia de Expansión',
+    match: 75, matchCls: 'match-mid', timeline: '9 meses', size: '80 empleados', city: 'CDMX',
+    rate: '$45,000 – $55,000 MXN/mes', bonus: '18%',
+    need: 'Expandirse a 3 nuevas ciudades en 9 meses, desarrollar modelo de franquicia y aumentar cartera de proyectos en 60%.',
+    contractType: 'Estrategia de Expansión',
+    sections: [
+      { title: '1. Partes', desc: 'Constructora JML S.A. de C.V. (PYME) · María González (Asesora)' },
+      { title: '2. Objeto', desc: 'Consultoría en Estrategia de Expansión: plan de mercado, estructura de franquicia, ventas B2B.' },
+      { title: '3. Duración y Fases', desc: 'Jun 2026 → Mar 2027 (9 meses) · Diagnóstico → Diseño → Implementación → Medición' },
+      { title: '4. Compensación', desc: '$50,000 MXN/mes retainer + 18% bono si cartera ≥ +50%' },
+      { title: '5. Fondo de Garantía', desc: '10% retención mensual ($5,000) en cuenta neutral. Acumulado: $45,000 en 9 meses.' },
+      { title: '6. Comisiones', desc: 'PymeBoost: 15% sobre retainers + 10% sobre bonificaciones' },
+      { title: '7. Terminación y Disputas', desc: 'Mediación neutral certificada. Prohibición de elusión 12 meses.' },
+    ]
+  },
+  ts: {
+    name: 'Tech Solutions SA', industry: 'Tecnología', area: 'Transformación Digital',
+    match: 68, matchCls: 'match-low', timeline: '6 meses', size: '30 empleados', city: 'MTY',
+    rate: '$40,000 MXN/mes', bonus: '15%',
+    need: 'Digitalizar procesos internos, implementar CRM y automatizar pipeline de ventas para reducir ciclo de venta 40%.',
+    contractType: 'Transformación Digital',
+    sections: [
+      { title: '1. Partes', desc: 'Tech Solutions SA de CV (PYME) · María González (Asesora)' },
+      { title: '2. Objeto', desc: 'Consultoría en Transformación Digital: CRM, automatización de ventas, integración de herramientas.' },
+      { title: '3. Duración y Fases', desc: 'Jul → Dic 2026 (6 meses) · Diagnóstico → Diseño → Implementación → Medición' },
+      { title: '4. Compensación', desc: '$40,000 MXN/mes retainer + 15% bono si ciclo de venta reduce ≥ 35%' },
+      { title: '5. Fondo de Garantía', desc: '10% retención mensual ($4,000). Total acumulable: $24,000.' },
+      { title: '6. Comisiones', desc: 'PymeBoost: 15% sobre retainers + 10% sobre bonificaciones' },
+      { title: '7. Terminación y Disputas', desc: 'Mediación neutral. Prohibición de elusión 12 meses post-contrato.' },
+    ]
+  }
+};
+
+// ── Helpers ───────────────────────────────
+function openModal(id){ document.getElementById(id).style.display='flex'; }
+function closeModal(id){ document.getElementById(id).style.display='none'; }
+
+function scrollToSection(id){
+  var el = document.getElementById(id);
+  if(el) el.scrollIntoView({block:'start'});
+}
+
+function openDetail(id){
+  var o = opps[id];
+  if(!o) return;
+  document.getElementById('detail-title').textContent = o.name + ' — Oportunidad';
+  document.getElementById('detail-body').innerHTML =
+    '<div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">'+
+    '<div style="width:44px;height:44px;border-radius:12px;background:rgba(124,58,237,0.2);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#a78bfa;flex-shrink:0;">'+o.name.split(' ').map(function(w){return w[0];}).join('').slice(0,2)+'</div>'+
+    '<div><div style="font-size:15px;font-weight:800;">'+o.name+'</div>'+
+    '<div style="font-size:12px;color:rgba(255,255,255,0.45);">'+o.industry+' · '+o.city+'</div>'+
+    '<span class="pill '+o.matchCls+'" style="font-size:10px;margin-top:5px;display:inline-flex;">'+o.match+'% match</span></div></div>'+
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;">'+
+    mkCell('Área de necesidad',o.area)+mkCell('Timeline',o.timeline)+
+    mkCell('Tamaño',o.size)+mkCell('Ubicación',o.city)+
+    mkCell('Retainer estimado',o.rate)+mkCell('Bono por resultados',o.bonus+' sobre KPIs')+
+    '</div>'+
+    '<div style="margin-bottom:16px;"><div style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px;">Objetivos medibles de la PYME</div>'+
+    '<div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:12px;font-size:13px;color:rgba(255,255,255,0.6);line-height:1.65;">'+o.need+'</div></div>'+
+    '<div style="display:flex;gap:10px;">'+
+    '<button onclick="closeModal(\'modal-detail\')" class="btn-secondary" style="flex:1;">Cerrar</button>'+
+    '<button onclick="closeModal(\'modal-detail\');openApply(\''+id+'\')" class="btn-primary" style="flex:1;">Aplicar a esta oportunidad →</button>'+
+    '</div>';
+  openModal('modal-detail');
+}
+
+function mkCell(label, val){
+  return '<div style="background:rgba(255,255,255,0.03);border-radius:9px;padding:10px 12px;"><div style="font-size:10px;color:rgba(255,255,255,0.35);margin-bottom:3px;">'+label+'</div><div style="font-size:12px;font-weight:600;color:rgba(255,255,255,0.85);">'+val+'</div></div>';
+}
+
+function openApply(id){
+  var o = opps[id];
+  if(!o) return;
+  document.getElementById('apply-title').textContent = 'Aplicar — ' + o.name;
+  document.getElementById('apply-contract-meta').innerHTML =
+    '<strong style="color:rgba(255,255,255,0.8);">Tipo:</strong> '+o.contractType+' &nbsp;·&nbsp; '+
+    '<strong style="color:rgba(255,255,255,0.8);">Duración:</strong> '+o.timeline+' &nbsp;·&nbsp; '+
+    '<strong style="color:rgba(255,255,255,0.8);">Retainer:</strong> '+o.rate+'<br>'+
+    '<strong style="color:rgba(255,255,255,0.8);">Bono:</strong> '+o.bonus+' sobre cumplimiento de KPIs acordados';
+  var sectionsHtml = o.sections.map(function(s){
+    return '<div class="contract-section" style="padding:10px 0;">'+
+      '<div style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.5);margin-bottom:3px;">'+s.title+'</div>'+
+      '<div style="font-size:12px;color:rgba(255,255,255,0.55);line-height:1.5;">'+s.desc+'</div>'+
+      '</div>';
+  }).join('');
+  document.getElementById('apply-sections').innerHTML = sectionsHtml;
+  document.getElementById('apply-msg').value = '';
+  closeModal('modal-detail');
+  openModal('modal-apply');
+  window._currentApplyId = id;
+}
+
+function submitApply(){
+  closeModal('modal-apply');
+  var t = document.getElementById('toast');
+  var o = opps[window._currentApplyId];
+  document.getElementById('toast-msg').textContent = '¡Aplicación enviada a ' + (o ? o.name : 'la PYME') + '! Recibirás notificación cuando respondan.';
+  t.style.display = 'flex';
+  setTimeout(function(){ t.style.display = 'none'; }, 5000);
+}
+</script>
+</body>
+</html>

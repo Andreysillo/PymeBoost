@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contratos — PymeBoost</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config={theme:{extend:{fontFamily:{sans:['Outfit','sans-serif']}}}}</script>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box}body{margin:0;background:#09090b;color:#fafafa;font-family:'Outfit',sans-serif;display:flex;height:100vh;overflow:hidden}
+    .sidebar{width:220px;min-width:220px;background:#0d0d10;border-right:1px solid rgba(255,255,255,0.06);display:flex;flex-direction:column;height:100vh;position:sticky;top:0}
+    .nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;font-size:13px;font-weight:500;color:rgba(255,255,255,0.5);text-decoration:none;transition:all .15s;border:1px solid transparent}
+    .nav-item:hover{background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.85)}
+    .nav-item.active{background:rgba(124,58,237,0.15);color:#a78bfa;border-color:rgba(139,92,246,0.2)}
+    .glass{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:16px}
+    .pill{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:100px;font-size:11px;font-weight:600}
+    .badge-active{background:rgba(59,130,246,0.15);color:#60a5fa;border:1px solid rgba(59,130,246,0.25)}
+    .badge-pending{background:rgba(245,158,11,0.15);color:#fbbf24;border:1px solid rgba(245,158,11,0.25)}
+    .badge-done{background:rgba(16,185,129,0.15);color:#34d399;border:1px solid rgba(16,185,129,0.25)}
+    .progress-bar{height:6px;background:rgba(255,255,255,0.08);border-radius:10px;overflow:hidden}
+    .progress-fill{height:100%;border-radius:10px;background:linear-gradient(90deg,#7c3aed,#a855f7)}
+    .btn-primary{display:inline-flex;align-items:center;gap:7px;padding:8px 16px;border-radius:11px;background:linear-gradient(135deg,#7c3aed,#a855f7);color:white;font-size:12px;font-weight:700;border:none;cursor:pointer;text-decoration:none;transition:transform .15s;box-shadow:0 3px 12px rgba(124,58,237,0.3)}
+    .btn-primary:hover{transform:scale(1.03)}
+    .btn-secondary{display:inline-flex;align-items:center;gap:7px;padding:8px 16px;border-radius:11px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.75);font-size:12px;font-weight:600;cursor:pointer;text-decoration:none;transition:all .15s}
+    .btn-secondary:hover{background:rgba(255,255,255,0.08)}
+    .filter-tab{padding:7px 16px;border-radius:9px;font-size:12px;font-weight:600;cursor:pointer;border:none;transition:all .15s;color:rgba(255,255,255,0.5);background:transparent}
+    .filter-tab.active{background:rgba(124,58,237,0.15);color:#a78bfa}
+    .filter-tab:hover:not(.active){color:rgba(255,255,255,0.8)}
+    .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.65);backdrop-filter:blur(8px);z-index:50;display:flex;align-items:center;justify-content:center;padding:16px}
+    .modal-box{background:#13131a;border:1px solid rgba(255,255,255,0.1);border-radius:20px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto}
+    .inp{width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:10px 14px;font-size:13px;font-family:'Outfit',sans-serif;color:white;outline:none;transition:border-color .2s}
+    .inp::placeholder{color:rgba(255,255,255,0.25)}.inp:focus{border-color:rgba(139,92,246,0.6)}
+    textarea.inp{resize:vertical;min-height:80px;line-height:1.5}
+    ::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:rgba(139,92,246,0.3);border-radius:10px}
+  </style>
+</head>
+<body>
+<!-- SIDEBAR (PYME view) -->
+<aside class="sidebar">
+  <div style="padding:18px 14px;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;gap:10px;">
+    <div style="width:28px;height:28px;border-radius:9px;background:linear-gradient(135deg,#7c3aed,#a855f7);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+    </div>
+    <div><div style="font-weight:700;font-size:14px;">PymeBoost</div><div style="font-size:10px;color:rgba(255,255,255,0.35);">Panel PYME</div></div>
+  </div>
+  <nav style="flex:1;padding:10px 8px;display:flex;flex-direction:column;gap:2px;">
+    <a href="Dashboard PYME.html" class="nav-item">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+      Inicio
+    </a>
+    <a href="Asesores.html" class="nav-item">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Buscar Asesores
+    </a>
+    <a href="Contratos.html" class="nav-item active">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      Mis Contratos
+    </a>
+    <a href="Mensajes.html" class="nav-item">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      Mensajes
+    </a>
+    <div style="flex:1;"></div>
+    <a href="#" class="nav-item"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Mi Perfil</a>
+  </nav>
+  <div style="padding:12px;border-top:1px solid rgba(255,255,255,0.06);">
+    <div style="display:flex;align-items:center;gap:10px;padding:8px;border-radius:10px;">
+      <div style="width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#a855f7);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;">RF</div>
+      <div style="min-width:0;"><div style="font-size:12px;font-weight:600;color:rgba(255,255,255,0.85);">Retail Fashion MX</div><div style="font-size:10px;color:rgba(255,255,255,0.35);">Retail · 45 emp.</div></div>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div style="flex:1;display:flex;flex-direction:column;overflow:hidden;">
+  <header style="height:56px;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:space-between;padding:0 24px;flex-shrink:0;background:#09090b;">
+    <h1 style="font-size:15px;font-weight:700;margin:0;">Mis Contratos</h1>
+    <div style="display:flex;gap:8px;">
+      <div id="filter-tabs" style="display:flex;gap:4px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:11px;padding:3px;">
+        <button class="filter-tab active" onclick="filterContracts('todos',this)">Todos (3)</button>
+        <button class="filter-tab" onclick="filterContracts('activo',this)">Activos</button>
+        <button class="filter-tab" onclick="filterContracts('pendiente',this)">Pendientes</button>
+        <button class="filter-tab" onclick="filterContracts('completado',this)">Completados</button>
+      </div>
+    </div>
+  </header>
+
+  <main style="flex:1;overflow-y:auto;padding:24px;display:flex;flex-direction:column;gap:14px;">
+
+    <!-- Contract 1: Activo -->
+    <div class="glass" style="padding:22px;" data-status="activo">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div style="width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,#7c3aed,#a855f7);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;">MG</div>
+          <div>
+            <div style="font-size:15px;font-weight:800;">María González</div>
+            <div style="font-size:12px;color:rgba(255,255,255,0.4);">Marketing Digital · 14 Ene 2026 → 14 Jul 2026</div>
+          </div>
+        </div>
+        <span class="pill badge-active">Activo</span>
+      </div>
+
+      <!-- Progress -->
+      <div style="margin-bottom:16px;">
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:6px;">
+          <span>Progreso del Proyecto</span><span>33% — Progreso Temporal (2 de 6 meses)</span>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" style="width:33%;"></div></div>
+      </div>
+
+      <!-- Details grid -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px;">
+        <div style="background:rgba(255,255,255,0.03);border-radius:10px;padding:10px;">
+          <div style="font-size:10px;color:rgba(255,255,255,0.35);margin-bottom:4px;">Retainer Mensual</div>
+          <div style="font-size:13px;font-weight:700;color:#a78bfa;">$38,000 MXN</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.03);border-radius:10px;padding:10px;">
+          <div style="font-size:10px;color:rgba(255,255,255,0.35);margin-bottom:4px;">Bono por Resultados</div>
+          <div style="font-size:13px;font-weight:700;color:#34d399;">15%</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.03);border-radius:10px;padding:10px;">
+          <div style="font-size:10px;color:rgba(255,255,255,0.35);margin-bottom:4px;">Próximo Hito</div>
+          <div style="font-size:12px;font-weight:600;">Reporte Q2</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.03);border-radius:10px;padding:10px;">
+          <div style="font-size:10px;color:rgba(255,255,255,0.35);margin-bottom:4px;">Fecha Límite</div>
+          <div style="font-size:12px;font-weight:600;">14 Jul 2026</div>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+        <button onclick="document.getElementById('modal-ver').style.display='flex'" class="btn-secondary">Ver Contrato</button>
+        <button class="btn-secondary">Descargar PDF</button>
+        <button onclick="document.getElementById('modal-firmar').style.display='flex'" class="btn-primary">Revisar y Firmar</button>
+        <a href="Mensajes.html" class="btn-secondary" style="margin-left:auto;">Mensajes →</a>
+      </div>
+
+      <!-- Guarantee fund -->
+      <div style="margin-top:14px;border-top:1px solid rgba(255,255,255,0.07);padding-top:14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <span style="font-size:12px;color:rgba(255,255,255,0.5);">Protegido por Fondo de Garantía · Cobertura legal incluida</span>
+        </div>
+        <button onclick="document.getElementById('modal-disputa').style.display='flex'" style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);color:#f87171;border-radius:9px;padding:5px 12px;font-size:11px;font-weight:600;cursor:pointer;">Reportar Problema</button>
+      </div>
+    </div>
+
+    <!-- Contract 2: Pendiente -->
+    <div class="glass" style="padding:22px;" data-status="pendiente">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div style="width:42px;height:42px;border-radius:12px;background:rgba(245,158,11,0.2);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fbbf24;flex-shrink:0;">JM</div>
+          <div>
+            <div style="font-size:15px;font-weight:800;">Jorge Méndez</div>
+            <div style="font-size:12px;color:rgba(255,255,255,0.4);">Eficiencia Operacional · 1 Jun 2026 → 1 Feb 2027</div>
+          </div>
+        </div>
+        <span class="pill badge-pending">Pendiente firma</span>
+      </div>
+      <div style="background:rgba(245,158,11,0.07);border:1px solid rgba(245,158,11,0.2);border-radius:10px;padding:12px;margin-bottom:14px;font-size:12px;color:rgba(255,255,255,0.5);">
+        ⏳ El asesor ha firmado el contrato. <strong style="color:rgba(255,255,255,0.85);">Tu firma es necesaria para activar el proyecto.</strong>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;">
+        <div style="background:rgba(255,255,255,0.03);border-radius:10px;padding:10px;"><div style="font-size:10px;color:rgba(255,255,255,0.35);margin-bottom:4px;">Retainer</div><div style="font-size:13px;font-weight:700;color:#a78bfa;">$48,000 MXN</div></div>
+        <div style="background:rgba(255,255,255,0.03);border-radius:10px;padding:10px;"><div style="font-size:10px;color:rgba(255,255,255,0.35);margin-bottom:4px;">Bono</div><div style="font-size:13px;font-weight:700;color:#34d399;">18%</div></div>
+        <div style="background:rgba(255,255,255,0.03);border-radius:10px;padding:10px;"><div style="font-size:10px;color:rgba(255,255,255,0.35);margin-bottom:4px;">Duración</div><div style="font-size:12px;font-weight:600;">8 meses</div></div>
+        <div style="background:rgba(255,255,255,0.03);border-radius:10px;padding:10px;"><div style="font-size:10px;color:rgba(255,255,255,0.35);margin-bottom:4px;">Inicio</div><div style="font-size:12px;font-weight:600;">1 Jun 2026</div></div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button onclick="document.getElementById('modal-ver').style.display='flex'" class="btn-secondary">Ver Contrato</button>
+        <button class="btn-secondary">Descargar PDF</button>
+        <button onclick="document.getElementById('modal-firmar').style.display='flex'" class="btn-primary">Revisar y Firmar</button>
+      </div>
+    </div>
+
+    <!-- Contract 3: Completado -->
+    <div class="glass" style="padding:22px;" data-status="completado">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div style="width:42px;height:42px;border-radius:12px;background:rgba(16,185,129,0.15);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#34d399;flex-shrink:0;">LP</div>
+          <div>
+            <div style="font-size:15px;font-weight:800;">Luis Pedraza</div>
+            <div style="font-size:12px;color:rgba(255,255,255,0.4);">Optimización de Ventas · Ago 2025 → Feb 2026</div>
+          </div>
+        </div>
+        <span class="pill badge-done">Completado</span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;">
+        <div style="background:rgba(255,255,255,0.03);border-radius:10px;padding:10px;"><div style="font-size:10px;color:rgba(255,255,255,0.35);margin-bottom:4px;">Retainer</div><div style="font-size:13px;font-weight:700;color:#a78bfa;">$32,000 MXN</div></div>
+        <div style="background:rgba(255,255,255,0.03);border-radius:10px;padding:10px;"><div style="font-size:10px;color:rgba(255,255,255,0.35);margin-bottom:4px;">Bono</div><div style="font-size:13px;font-weight:700;color:#34d399;">12%</div></div>
+        <div style="background:rgba(255,255,255,0.03);border-radius:10px;padding:10px;"><div style="font-size:10px;color:rgba(255,255,255,0.35);margin-bottom:4px;">Duración</div><div style="font-size:12px;font-weight:600;">6 meses</div></div>
+        <div style="background:rgba(255,255,255,0.03);border-radius:10px;padding:10px;"><div style="font-size:10px;color:rgba(255,255,255,0.35);margin-bottom:4px;">Resultados</div><div style="font-size:12px;font-weight:700;color:#34d399;">+42% ventas ✓</div></div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button onclick="document.getElementById('modal-ver').style.display='flex'" class="btn-secondary">Ver Contrato</button>
+        <button class="btn-secondary">Descargar PDF</button>
+        <button onclick="document.getElementById('modal-ver').style.display='flex'" class="btn-primary">Revisar y Firmar</button>
+        <div style="flex:1;"></div>
+        <button onclick="document.getElementById('modal-adicional').style.display='flex'" style="display:inline-flex;align-items:center;gap:7px;padding:8px 16px;border-radius:11px;background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.25);color:#a78bfa;font-size:12px;font-weight:600;cursor:pointer;">+ Solicitar contrato adicional</button>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Modal: Ver Contrato -->
+<div id="modal-ver" style="display:none;" class="modal-bg" onclick="if(event.target===this)this.style.display='none'">
+  <div class="modal-box">
+    <div style="padding:20px 20px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.07);">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        <span style="font-size:14px;font-weight:700;">Contrato — Marketing Digital</span>
+      </div>
+      <button onclick="document.getElementById('modal-ver').style.display='none'" style="background:none;border:none;color:rgba(255,255,255,0.4);cursor:pointer;">✕</button>
+    </div>
+    <div style="padding:20px;font-size:13px;color:rgba(255,255,255,0.6);line-height:1.8;">
+      <div style="background:rgba(139,92,246,0.08);border:1px solid rgba(139,92,246,0.2);border-radius:10px;padding:10px;margin-bottom:16px;font-size:11px;color:#a78bfa;">📄 Contrato generado automáticamente por PymeBoost — No modificable por las partes</div>
+
+      <div style="margin-bottom:14px;"><div style="font-weight:700;color:white;margin-bottom:6px;font-size:12px;text-transform:uppercase;letter-spacing:0.05em;color:rgba(255,255,255,0.4);">1. Partes del Contrato</div>
+      <p><strong style="color:rgba(255,255,255,0.85);">PYME:</strong> Retail Fashion MX S.A. de C.V., RFC: RFM900101ABC, representada por Ana Torres.</p>
+      <p><strong style="color:rgba(255,255,255,0.85);">Asesor:</strong> María González, especialización: Marketing Digital.</p></div>
+
+      <div style="margin-bottom:14px;"><div style="font-weight:700;color:rgba(255,255,255,0.4);margin-bottom:6px;font-size:12px;text-transform:uppercase;letter-spacing:0.05em;">2. Objeto del Contrato</div>
+      <p>La Asesora prestará servicios de consultoría en Marketing Digital, incluyendo estrategia de paid ads, optimización de conversión, email marketing y análisis de datos. Excluye desarrollo de software y producción de contenido creativo.</p></div>
+
+      <div style="margin-bottom:14px;"><div style="font-weight:700;color:rgba(255,255,255,0.4);margin-bottom:6px;font-size:12px;text-transform:uppercase;letter-spacing:0.05em;">3. Duración y Fases</div>
+      <p>14 Enero 2026 → 14 Julio 2026 (6 meses)</p>
+      <p>• Fase 1 (Mes 1): Diagnóstico y Planificación<br>• Fase 2 (Mes 2): Diseño de Estrategia<br>• Fase 3 (Meses 3-5): Implementación y Optimización<br>• Fase 4 (Mes 6): Medición y Entrega Final</p></div>
+
+      <div style="margin-bottom:14px;"><div style="font-weight:700;color:rgba(255,255,255,0.4);margin-bottom:6px;font-size:12px;text-transform:uppercase;letter-spacing:0.05em;">4. Compensación</div>
+      <p>Retainer: $38,000 MXN/mes. Bonificación: 15% si se alcanza incremento de ventas ≥ 40% y reducción de CAC ≥ 20%. Medición: Google Analytics + reportes mensuales verificables.</p></div>
+
+      <div style="margin-bottom:14px;"><div style="font-weight:700;color:rgba(255,255,255,0.4);margin-bottom:6px;font-size:12px;text-transform:uppercase;letter-spacing:0.05em;">5. Fondo de Garantía</div>
+      <p>PymeBoost retiene el 10% de cada pago mensual ($3,800 MXN) en cuenta neutral. Se libera al finalizar (98%) o según mediación. Total acumulable: $22,800 MXN.</p></div>
+
+      <div style="margin-bottom:14px;"><div style="font-weight:700;color:rgba(255,255,255,0.4);margin-bottom:6px;font-size:12px;text-transform:uppercase;letter-spacing:0.05em;">6. Comisiones</div>
+      <p>PymeBoost retiene 15% sobre retainers mensuales y 10% sobre bonificaciones por resultados. Estos cubren verificación, plataforma, soporte legal y servicio de mediación.</p></div>
+
+      <div><div style="font-weight:700;color:rgba(255,255,255,0.4);margin-bottom:6px;font-size:12px;text-transform:uppercase;letter-spacing:0.05em;">7. Terminación y Disputas</div>
+      <p>Terminación anticipada post-Fase 1 requiere causa justificada. Disputas se resuelven mediante mediación neutral certificada. Escalación a arbitraje solo si mediación falla. Prohibición de elusión por 12 meses post-contrato.</p></div>
+    </div>
+    <div style="padding:0 20px 20px;display:flex;gap:10px;">
+      <button class="btn-secondary" style="flex:1;justify-content:center;" onclick="document.getElementById('modal-ver').style.display='none'">Cerrar</button>
+      <button class="btn-primary" style="flex:1;justify-content:center;">Descargar PDF</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Firmar -->
+<div id="modal-firmar" style="display:none;" class="modal-bg" onclick="if(event.target===this)this.style.display='none'">
+  <div class="modal-box">
+    <div style="padding:20px 20px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.07);">
+      <span style="font-size:14px;font-weight:700;">Revisar y Firmar Contrato</span>
+      <button onclick="document.getElementById('modal-firmar').style.display='none'" style="background:none;border:none;color:rgba(255,255,255,0.4);cursor:pointer;">✕</button>
+    </div>
+    <div style="padding:20px;">
+      <p style="font-size:13px;color:rgba(255,255,255,0.5);margin-bottom:16px;">Al firmar, aceptas los siguientes términos vinculantes:</p>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;">
+        <div style="display:flex;align-items:center;gap:10px;font-size:13px;"><span style="color:#a78bfa;font-weight:700;">✓</span><span style="color:rgba(255,255,255,0.7);">Retainer mensual de <strong style="color:white;">$38,000 MXN</strong></span></div>
+        <div style="display:flex;align-items:center;gap:10px;font-size:13px;"><span style="color:#a78bfa;font-weight:700;">✓</span><span style="color:rgba(255,255,255,0.7);">Bonificación del <strong style="color:white;">15%</strong> por cumplimiento de KPIs</span></div>
+        <div style="display:flex;align-items:center;gap:10px;font-size:13px;"><span style="color:#a78bfa;font-weight:700;">✓</span><span style="color:rgba(255,255,255,0.7);">Retención del <strong style="color:white;">10%</strong> en fondo de garantía</span></div>
+        <div style="display:flex;align-items:center;gap:10px;font-size:13px;"><span style="color:#a78bfa;font-weight:700;">✓</span><span style="color:rgba(255,255,255,0.7);">Comisión de plataforma del <strong style="color:white;">15%</strong> sobre retainer</span></div>
+        <div style="display:flex;align-items:center;gap:10px;font-size:13px;"><span style="color:#a78bfa;font-weight:700;">✓</span><span style="color:rgba(255,255,255,0.7);">Duración de <strong style="color:white;">6 meses</strong> con fases definidas</span></div>
+        <div style="display:flex;align-items:center;gap:10px;font-size:13px;"><span style="color:#a78bfa;font-weight:700;">✓</span><span style="color:rgba(255,255,255,0.7);">Resolución de disputas mediante <strong style="color:white;">mediación neutral</strong></span></div>
+      </div>
+      <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:10px;margin-bottom:16px;font-size:11px;color:rgba(255,255,255,0.4);">⚠️ Este contrato es generado automáticamente y no puede ser modificado por ninguna de las partes.</div>
+      <div style="display:flex;gap:10px;">
+        <button onclick="document.getElementById('modal-firmar').style.display='none'" class="btn-secondary" style="flex:1;justify-content:center;">Cancelar</button>
+        <button onclick="document.getElementById('modal-firmar').style.display='none';showToast('¡Contrato firmado! El proyecto iniciará pronto.')" class="btn-primary" style="flex:1;justify-content:center;">Firmar Contrato</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Contrato Adicional -->
+<div id="modal-adicional" style="display:none;" class="modal-bg" onclick="if(event.target===this)this.style.display='none'">
+  <div class="modal-box">
+    <div style="padding:20px 20px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.07);">
+      <span style="font-size:14px;font-weight:700;">Solicitar Contrato Adicional</span>
+      <button onclick="document.getElementById('modal-adicional').style.display='none'" style="background:none;border:none;color:rgba(255,255,255,0.4);cursor:pointer;">✕</button>
+    </div>
+    <div style="padding:20px;display:flex;flex-direction:column;gap:14px;">
+      <div><label style="font-size:12px;font-weight:600;color:rgba(255,255,255,0.7);display:block;margin-bottom:6px;">Descripción del nuevo proyecto</label>
+      <textarea class="inp" placeholder="Necesito continuar con optimización, enfocándome en atención al cliente y expansión a marketplaces..."></textarea></div>
+      <div><label style="font-size:12px;font-weight:600;color:rgba(255,255,255,0.7);display:block;margin-bottom:6px;">Duración estimada</label>
+      <input class="inp" type="text" placeholder="Ej: 4-6 meses"></div>
+      <div><label style="font-size:12px;font-weight:600;color:rgba(255,255,255,0.7);display:block;margin-bottom:6px;">Objetivos medibles esperados</label>
+      <textarea class="inp" placeholder="Reducir tiempo de respuesta 40%, incrementar satisfacción NPS en 20 puntos..."></textarea></div>
+      <div style="background:rgba(139,92,246,0.07);border:1px solid rgba(139,92,246,0.2);border-radius:10px;padding:12px;font-size:12px;color:rgba(255,255,255,0.5);line-height:1.7;">
+        <strong style="color:rgba(255,255,255,0.8);">¿Qué sigue?</strong><br>
+        1. PymeBoost revisa tu solicitud (2-3 días hábiles)<br>
+        2. Se genera contrato personalizado<br>
+        3. Ambas partes deben aprobar y firmar
+      </div>
+      <div style="display:flex;gap:10px;">
+        <button onclick="document.getElementById('modal-adicional').style.display='none'" class="btn-secondary" style="flex:1;justify-content:center;">Cancelar</button>
+        <button onclick="document.getElementById('modal-adicional').style.display='none';showToast('Solicitud enviada. Revisaremos en 2-3 días hábiles.')" class="btn-primary" style="flex:1;justify-content:center;">Enviar Solicitud</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Reportar Problema -->
+<div id="modal-disputa" style="display:none;" class="modal-bg" onclick="if(event.target===this)this.style.display='none'">
+  <div class="modal-box">
+    <div style="padding:20px 20px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.07);">
+      <span style="font-size:14px;font-weight:700;">Reportar Problema</span>
+      <button onclick="document.getElementById('modal-disputa').style.display='none'" style="background:none;border:none;color:rgba(255,255,255,0.4);cursor:pointer;">✕</button>
+    </div>
+    <div style="padding:20px;display:flex;flex-direction:column;gap:14px;">
+      <div style="background:rgba(239,68,68,0.07);border:1px solid rgba(239,68,68,0.2);border-radius:10px;padding:12px;font-size:12px;color:rgba(255,255,255,0.55);">El fondo de garantía protege tu inversión. Un mediador certificado de PymeBoost revisará el caso en 10-15 días hábiles.</div>
+      <div><label style="font-size:12px;font-weight:600;color:rgba(255,255,255,0.7);display:block;margin-bottom:6px;">Tipo de problema</label>
+      <select class="inp"><option disabled selected>Selecciona...</option><option>Asesor no entrega según contrato</option><option>Calidad insuficiente</option><option>Incumplimiento de plazos</option><option>No alcanza KPIs por falta de esfuerzo</option><option>Otro</option></select></div>
+      <div><label style="font-size:12px;font-weight:600;color:rgba(255,255,255,0.7);display:block;margin-bottom:6px;">Descripción detallada</label>
+      <textarea class="inp" placeholder="Describe el problema con evidencias. Puedes mencionar fechas, mensajes y entregables específicos..."></textarea></div>
+      <div style="display:flex;gap:10px;">
+        <button onclick="document.getElementById('modal-disputa').style.display='none'" class="btn-secondary" style="flex:1;justify-content:center;">Cancelar</button>
+        <button onclick="document.getElementById('modal-disputa').style.display='none';showToast('Disputa iniciada. Te contactaremos en 1-2 días hábiles.')" style="flex:1;justify-content:center;display:inline-flex;align-items:center;gap:7px;padding:8px 16px;border-radius:11px;background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);color:#f87171;font-size:12px;font-weight:700;cursor:pointer;">Reportar Problema</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" style="display:none;position:fixed;bottom:24px;right:24px;background:#059669;color:white;padding:12px 18px;border-radius:12px;font-size:13px;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,0.3);z-index:100;max-width:340px;"></div>
+
+<script>
+function filterContracts(status, btn) {
+  document.querySelectorAll('.filter-tab').forEach(function(b){b.classList.remove('active');});
+  btn.classList.add('active');
+  document.querySelectorAll('[data-status]').forEach(function(c){
+    c.style.display = (status === 'todos' || c.dataset.status === status) ? '' : 'none';
+  });
+}
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.display = 'block';
+  setTimeout(function(){t.style.display='none';}, 4000);
+}
+</script>
+</body>
+</html>
